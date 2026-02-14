@@ -15,27 +15,23 @@ export namespace SR {
         return value;
     }
     export function getValue(sr: StringResource): string;
-    export function getValue(sr: null | undefined): null;
+    export function getValue(sr: null | undefined | StringResource): null | string;
     export function getValue(sr: StringResource | null | undefined): string | null {
         if (sr == null) return null;
         return typeof sr === "string" ? sr : sr[0];
     }
     export function getMetadata(sr: StringResource): Record<string, any>;
-    export function getMetadata(sr: null | undefined): null;
+    export function getMetadata(sr: null | undefined | StringResource): null | Record<string, any>;
     export function getMetadata(sr: StringResource | null | undefined): Record<string, any> | null {
         if (sr == null) return null;
         if (typeof sr === "string") return {};
         return sr[1] ?? {};
     }
-    export function setMetadata(sr: StringResource, newMetadata: Record<string, any>): StringResource
-    export function setMetadata(sr: null | undefined, newMetadata: Record<string, any>): StringResource
     export function setMetadata(sr: StringResource | null | undefined, newMetadata: Record<string, any>): StringResource {
         if(sr == null) return create("", newMetadata);
         const value = getValue(sr);
         return create(value, { ...getMetadata(sr), ...newMetadata });
     }
-    export function setValue(sr: StringResource, newValue: string): StringResource;
-    export function setValue(sr: null | undefined, newValue: string): StringResource;
     export function setValue(sr: StringResource | null | undefined, newValue: string): StringResource {
         if(sr == null || typeof sr === "string") return create(newValue);
         return create(newValue, getMetadata(sr));
