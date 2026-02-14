@@ -3,7 +3,7 @@ import { LanguagePacks } from "./LanguagePack";
 import { LanguagePack } from "./LanguagePack/LanguagePack";
 import { DefaultPipelineFunctions } from "./PipelineFunction/DefaultPipelinesFunctions";
 import { PipelineFunction, PipelineFunctionsMap } from "./PipelineFunction/PipelineFunction";
-import { StringResource, StringResourceMap } from "./StringResource";
+import { SR, StringResource, StringResourceMap } from "./StringResource";
 import EventEmitter from "emitix";
 import { WatchableString } from "./WatchableString";
 import { replacePlaceholdersFast } from "./Parser/PlaceholderParser";
@@ -192,7 +192,7 @@ export class LexoraContext extends EventEmitter.Protected<{
         callContext: TranslateCallContext,
         callPath: string[]
     ): string {
-        const stringResourceValue = typeof stringResource === "string" ? stringResource : stringResource[0];
+        const stringResourceValue = SR.getValue(stringResource);
         if (stringResourceValue.indexOf("{{") === -1) return stringResourceValue;
 
         const languageStringResources = this._stringResources[this._currentLanguage] ?? {};

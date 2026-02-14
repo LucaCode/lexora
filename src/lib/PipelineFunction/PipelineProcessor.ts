@@ -1,4 +1,4 @@
-import { StringResource } from "../StringResource";
+import { SR, StringResource } from "../StringResource";
 import { PipelineFunctionsMap } from "./PipelineFunction";
 
 export type PipelineFunctionCall = { name: string; params: string[] };
@@ -9,9 +9,9 @@ export interface PipelineProcessOptions {
 }
 
 export function processPipeline(value: string, originalStringResource: StringResource, pipelineFunctionsMap: PipelineFunctionsMap, pipelineFunctionCalls: PipelineFunctionCall[] = [], options?: PipelineProcessOptions): string {
-    const stringResourceValue = typeof originalStringResource === "string" ? originalStringResource : originalStringResource[0];
+    const stringResourceValue = SR.getValue(originalStringResource);
     if(pipelineFunctionCalls.length === 0) return stringResourceValue;
-    const stringResourceMetadata = typeof originalStringResource === "string" ? {} : originalStringResource[1] ?? {};
+    const stringResourceMetadata = SR.getMetadata(originalStringResource);
 
     const stringResourceContext = Object.freeze({
         value: stringResourceValue,
