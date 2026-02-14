@@ -11,8 +11,8 @@ export type StringResourceMap = Record<LanguageKey, StringResource>;
 
 export namespace SR {
     export function create(value: string, metadata?: Record<string, any>): StringResource {
-        if (metadata) return [value, metadata];
-        return value;
+        if (!metadata || Object.keys(metadata).length === 0) return value;
+        return [value, metadata];
     }
     export function getValue(sr: StringResource): string;
     export function getValue(sr: null | undefined | StringResource): null | string;
@@ -28,12 +28,12 @@ export namespace SR {
         return sr[1] ?? {};
     }
     export function setMetadata(sr: StringResource | null | undefined, newMetadata: Record<string, any>): StringResource {
-        if(sr == null) return create("", newMetadata);
+        if (sr == null) return create("", newMetadata);
         const value = getValue(sr);
         return create(value, { ...getMetadata(sr), ...newMetadata });
     }
     export function setValue(sr: StringResource | null | undefined, newValue: string): StringResource {
-        if(sr == null || typeof sr === "string") return create(newValue);
+        if (sr == null || typeof sr === "string") return create(newValue);
         return create(newValue, getMetadata(sr));
     }
 }

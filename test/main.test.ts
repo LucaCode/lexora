@@ -494,9 +494,9 @@ describe("Template translation and pipeline processing", () => {
                 assert.deepEqual(sr, ["Hello", { a: 1 }]);
             });
 
-            it("should treat empty object metadata as 'provided' and return tuple", () => {
+            it("should drop metadata when metadata is an empty object", () => {
                 const sr = SR.create("Hello", {});
-                assert.deepEqual(sr, ["Hello", {}]);
+                assert.equal(sr, "Hello");
             });
 
         });
@@ -604,9 +604,9 @@ describe("Template translation and pipeline processing", () => {
                 assert.deepEqual(out, ["Villa", { gender: "n" }]);
             });
 
-            it("should not accidentally drop metadata when metadata is an empty object", () => {
+            it("should drop metadata when metadata is an empty object", () => {
                 const out = SR.setValue(["Haus", {}], "Villa");
-                assert.deepEqual(out, ["Villa", {}]);
+                assert.deepEqual(out, "Villa");
             });
 
         });
