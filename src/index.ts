@@ -9,7 +9,7 @@ import { LanguagePacks } from "./lib/LanguagePack";
 import { LanguagePack } from "./lib/LanguagePack/LanguagePack";
 import { LexoraContext, TranslateCallContext } from "./lib/LexoraContext";
 import { PipelineFunction } from "./lib/PipelineFunction/PipelineFunction";
-import { StringResource, StringResourceMap } from "./lib/StringResource";
+import { StringResource, StringResourceMap, stringResourceValue } from "./lib/StringResource";
 import { WatchableString } from "./lib/WatchableString";
 
 export {
@@ -21,5 +21,6 @@ export {
     StringResourceMap,
     PipelineFunction,
     WatchableString,
-    TranslateCallContext
+    TranslateCallContext,
+    stringResourceValue
 };
