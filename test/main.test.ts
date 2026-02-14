@@ -5,7 +5,7 @@ Copyright(c) Ing. Luca Gian Scaringella
 */
 
 const assert = require("chai").assert;
-import { LexoraContext, StringResourceMap, LanguagePacks } from "../src";
+import { LexoraContext, StringResourceMap, LanguagePacks, SR, StringResource } from "../src";
 
 const { GrammaticalGender: DeGender } = LanguagePacks.German.Features;
 
@@ -477,6 +477,138 @@ describe("Template translation and pipeline processing", () => {
             const ctx = makeLenientCtx();
             ctx.language = "en";
             assert.equal(ctx.translate("{{house->article(foo)}}"), "house");
+        });
+
+    });
+    describe("SR (StringResource helpers)", () => {
+
+        describe("create()", () => {
+
+            it("should create a plain string resource when no metadata is provided", () => {
+                const sr = SR.create("Hello");
+                assert.equal(sr, "Hello");
+            });
+
+            it("should create a tuple resource when metadata is provided", () => {
+                const sr = SR.create("Hello", { a: 1 });
+                assert.deepEqual(sr, ["Hello", { a: 1 }]);
+            });
+
+            it("should treat empty object metadata as 'provided' and return tuple", () => {
+                const sr = SR.create("Hello", {});
+                assert.deepEqual(sr, ["Hello", {}]);
+            });
+
+        });
+
+        describe("getValue()", () => {
+
+            it("should return string value for plain string resource", () => {
+                assert.equal(SR.getValue("Haus"), "Haus");
+            });
+
+            it("should return string value for tuple resource", () => {
+                const sr: StringResource = ["Haus", { gender: "n" }];
+                assert.equal(SR.getValue(sr), "Haus");
+            });
+
+            it("should return null for null input", () => {
+                assert.equal(SR.getValue(null), null);
+            });
+
+            it("should return null for undefined input", () => {
+                assert.equal(SR.getValue(undefined), null);
+            });
+
+        });
+
+        describe("getMetadata()", () => {
+
+            it("should return empty object for plain string resource", () => {
+                assert.deepEqual(SR.getMetadata("Haus"), {});
+            });
+
+            it("should return metadata object for tuple resource", () => {
+                const sr: StringResource = ["Haus", { gender: "n" }];
+                assert.deepEqual(SR.getMetadata(sr), { gender: "n" });
+            });
+
+            it("should return empty object when tuple metadata is undefined/nullish", () => {
+                const sr = ["Haus", undefined as any] as StringResource;
+                assert.deepEqual(SR.getMetadata(sr), {});
+            });
+
+            it("should return null for null input", () => {
+                assert.equal(SR.getMetadata(null), null);
+            });
+
+            it("should return null for undefined input", () => {
+                assert.equal(SR.getMetadata(undefined), null);
+            });
+
+        });
+
+        describe("setMetadata()", () => {
+
+            it("should create resource with empty string value when input is null", () => {
+                const out = SR.setMetadata(null, { a: 1 });
+                assert.deepEqual(out, ["", { a: 1 }]);
+            });
+
+            it("should create resource with empty string value when input is undefined", () => {
+                const out = SR.setMetadata(undefined, { a: 1 });
+                assert.deepEqual(out, ["", { a: 1 }]);
+            });
+
+            it("should add metadata to plain string resource", () => {
+                const out = SR.setMetadata("Haus", { gender: "n" });
+                assert.deepEqual(out, ["Haus", { gender: "n" }]);
+            });
+
+            it("should merge metadata into existing tuple resource (new keys added)", () => {
+                const out = SR.setMetadata(["Haus", { gender: "n" }], { foo: "bar" });
+                assert.deepEqual(out, ["Haus", { gender: "n", foo: "bar" }]);
+            });
+
+            it("should override existing metadata keys when merging", () => {
+                const out = SR.setMetadata(["Haus", { gender: "n", x: 1 }], { x: 2 });
+                assert.deepEqual(out, ["Haus", { gender: "n", x: 2 }]);
+            });
+
+            it("should keep value intact when updating metadata", () => {
+                const out = SR.setMetadata(["Auto", { a: 1 }], { b: 2 });
+                assert.equal(SR.getValue(out), "Auto");
+            });
+
+        });
+
+        describe("setValue()", () => {
+
+            it("should create plain string resource for null input", () => {
+                const out = SR.setValue(null, "X");
+                assert.equal(out, "X");
+            });
+
+            it("should create plain string resource for undefined input", () => {
+                const out = SR.setValue(undefined, "X");
+                assert.equal(out, "X");
+            });
+
+            it("should replace value for plain string resource", () => {
+                const out = SR.setValue("Haus", "Villa");
+                assert.equal(out, "Villa");
+            });
+
+            it("should replace value and preserve metadata for tuple resource", () => {
+                const out = SR.setValue(["Haus", { gender: "n" }], "Villa");
+                assert.deepEqual(out, ["Villa", { gender: "n" }]);
+            });
+
+            it("should not accidentally drop metadata when metadata is an empty object", () => {
+                const out = SR.setValue(["Haus", {}], "Villa");
+                assert.deepEqual(out, ["Villa", {}]);
+            });
+
         });
 
     });
