@@ -212,9 +212,9 @@ export class LexoraContext extends EventEmitter.Protected<{
         });
     }
 
-    private _resolveKeyFromCallContext(key: string, context: TranslateCallContext): StringResource | null {
+    private _resolveKeyFromCallContext(key: string, context: TranslateCallContext): StringResource | undefined {
         const value = context[key];
-        if(value == null) return null;
+        if(value == null) return undefined;
         if(typeof value === "string" || Array.isArray(value)) return value;
         return (value as StringResourceMap)[this._currentLanguage];
     }

@@ -611,6 +611,15 @@ describe("Template translation and pipeline processing", () => {
 
         });
 
+        describe("merge()", () => {
+
+            it("should merge metadata and values correctly", () => {
+                const out = SR.merge(["Haus", { gender: "n" }], ["Villa", { color: "red" }]);
+                assert.deepEqual(out, ["Villa", { gender: "n", color: "red" }]);
+            });
+            
+        });
+
     });
 
 });
