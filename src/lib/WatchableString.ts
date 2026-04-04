@@ -7,11 +7,21 @@ export class WatchableString<T = LexoraContext> extends EventEmitter.Protected<{
 }> {
     private _value: string;
     private _updater: (context: T) => string;
+    private _unbind?: () => void;
 
-    constructor(value: string, updater: (context: T) => string) {
+    constructor(value: string, updater: (context: T) => string, unbind?: () => void) {
         super();
         this._value = value;
         this._updater = updater;
+        this._unbind = unbind;
+    }
+
+    destroy() {
+        this.off();
+        if (this._unbind) {
+            this._unbind();
+            this._unbind = undefined;
+        }
     }
 
     /**

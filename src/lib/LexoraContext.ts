@@ -277,7 +277,10 @@ export class LexoraContext extends EventEmitter.Protected<{
         const callContext = { ...context };
         const clonedTemplate = typeof template === "string" ? template : { ...template };
         const run = (context: LexoraContext) => context.translate(clonedTemplate, callContext);
-        const watchableString = new WatchableString(run(this), run);
+        let watchableString
+        watchableString = new WatchableString(run(this), run, () => 
+            this.untrackWatchableString(watchableString)
+        );
         this._trackWatchableString(watchableString);
         return watchableString;
     }
