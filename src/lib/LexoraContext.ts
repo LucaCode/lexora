@@ -38,9 +38,13 @@ export class LexoraContext extends EventEmitter.Protected<{
     private _stringResources: Record<LanguageKey, Record<string, StringResource>> = {};
 
     private _watchableStrings: Set<WatchableStringRef> = new Set();
-    private _finalizeWatchableStrings = new FinalizationRegistry<WatchableStringRef>((ref) => {
-        this._watchableStrings.delete(ref);
-    });
+
+    private _finalizeWatchableStrings =
+        typeof FinalizationRegistry !== "undefined"
+            ? new FinalizationRegistry<WatchableStringRef>((ref) => {
+                this._watchableStrings.delete(ref);
+            })
+            : null;
 
     constructor(options?: LexoraContextOptions) {
         super();
@@ -61,7 +65,26 @@ export class LexoraContext extends EventEmitter.Protected<{
     private _trackWatchableString(w: WatchableString<LexoraContext>) {
         const ref = new WeakRef(w);
         this._watchableStrings.add(ref);
-        this._finalizeWatchableStrings.register(w, ref);
+        this._finalizeWatchableStrings?.register(w, ref);
+    }
+
+    /**
+     * @description
+     * Untracks a watchable string, so it won't receive updates anymore. 
+     * This is useful to prevent memory leaks when a watchable string is no longer needed.
+     * Notice normaly you don't need to call this method, because the context will automatically 
+     * untrack watchable strings when they are garbage collected.
+     * @param w 
+     */
+    untrackWatchableString(w: WatchableString<LexoraContext>) {
+        for (const ref of this._watchableStrings) {
+            const deref = ref.deref();
+            if (deref === w) {
+                this._watchableStrings.delete(ref);
+                this._finalizeWatchableStrings?.unregister(w);
+                break;
+            }
+        }
     }
 
     public static createWithDefaults(options?: LexoraContextOptions): LexoraContext {
@@ -214,8 +237,8 @@ export class LexoraContext extends EventEmitter.Protected<{
 
     private _resolveKeyFromCallContext(key: string, context: TranslateCallContext): StringResource | undefined {
         const value = context[key];
-        if(value == null) return undefined;
-        if(typeof value === "string" || Array.isArray(value)) return value;
+        if (value == null) return undefined;
+        if (typeof value === "string" || Array.isArray(value)) return value;
         return (value as StringResourceMap)[this._currentLanguage];
     }
 
