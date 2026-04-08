@@ -11,7 +11,7 @@ import { processPipeline } from "./PipelineFunction/PipelineProcessor";
 import { DynamicValue, FormattableResource } from "./DynamicValue";
 import { formatFormattableResourceDefault } from "./DefaultFormatter";
 
-export type TranslateCallContext = Record<string, DynamicValue>;
+export type TranslateCallContext = Record<string, DynamicValue | undefined>;
 type WatchableStringRef = WeakRef<WatchableString<LexoraContext>>;
 
 interface LexoraContextOptions {
