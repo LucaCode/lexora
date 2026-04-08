@@ -32,14 +32,19 @@ function formatCustomDate(date: Date, format: string): string {
   return result;
 }
 
+function toDate(value: unknown): Date {
+  if (value instanceof Date) return value;
+  if (typeof value === "number") return new Date(value);
+
+  throw new Error("time: value must be Date or number timestamp");
+}
+
 export const DatePipelineFunction: PipelineFunction = {
   name: "date",
   process: (context) => {
     const { value, parameters, language } = context;
+    const date = toDate(value);
 
-    if (!(value instanceof Date)) {
-      throw new Error("date: value must be Date");
-    }
     const format = parameters?.[0];
 
     switch (format) {
@@ -47,37 +52,36 @@ export const DatePipelineFunction: PipelineFunction = {
       case "medium":
         return new Intl.DateTimeFormat(language, {
           dateStyle: "medium",
-        }).format(value);
+        }).format(date);
 
       case "short":
         return new Intl.DateTimeFormat(language, {
           dateStyle: "short",
-        }).format(value);
+        }).format(date);
 
       case "long":
         return new Intl.DateTimeFormat(language, {
           dateStyle: "long",
-        }).format(value);
+        }).format(date);
 
       case "time":
         return new Intl.DateTimeFormat(language, {
           timeStyle: "short",
-        }).format(value);
+        }).format(date);
 
       case "datetime":
         return new Intl.DateTimeFormat(language, {
           dateStyle: "medium",
           timeStyle: "short",
-        }).format(value);
+        }).format(date);
 
       case "iso":
-        return value.toISOString();
+        return date.toISOString();
     }
 
     if (format) {
-      return formatCustomDate(value, format);
+      return formatCustomDate(date, format);
     }
-
-    return value.toString();
+    return date.toString();
   },
 };
