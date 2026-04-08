@@ -1,11 +1,12 @@
 import { LanguagePack } from "./../LanguagePack";
 import { ArticlePipelineFunction } from "./PipelineFunctions/Article";
 import {Features as GermanFeautures} from "./Features";
+import { BooleanPipelineFunction } from "./PipelineFunctions/Boolean";
 
 export namespace GermanLanguagePack {
   export import Features = GermanFeautures;
   export const pack: LanguagePack = {
     language: "de",
-    pipelineFunctions: [ArticlePipelineFunction],
+    pipelineFunctions: [ArticlePipelineFunction,BooleanPipelineFunction],
   };
 }

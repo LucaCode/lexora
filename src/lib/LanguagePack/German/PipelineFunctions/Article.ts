@@ -63,6 +63,7 @@ export const ArticlePipelineFunction: PipelineFunction = {
             );
         }
 
+        if(!context.stringResource) throw new Error(`article: can not determine gender without stringResource`);
         const gender = context.stringResource?.metadata?.gender as
             | Features.GrammaticalGender
             | undefined;
@@ -78,7 +79,7 @@ export const ArticlePipelineFunction: PipelineFunction = {
         }
 
         const article = DEFINITE_ARTICLES[grammaticalCaseRaw][gender];
-        const noun = context.value ?? context.stringResource?.value ?? "";
+        const noun = String(context.value) ?? context.stringResource?.value ?? "";
 
         if (!noun.trim()) throw new Error(`article: empty noun value in context`);
         return `${article} ${noun}`;

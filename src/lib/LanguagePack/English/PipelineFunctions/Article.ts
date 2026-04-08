@@ -5,8 +5,8 @@ export const ArticlePipelineFunction: PipelineFunction = {
     name: "article",
     process: (context) => {
         const type = context.parameters?.[0]; // "definite" | "indefinite"
-        const noun = context.value?.trim();
-        if (!noun) throw new Error("article: empty noun");
+        if(context.value == null) throw new Error("article: empty noun");
+        const noun = String(context.value).trim();
 
         if (type === "definite" || !type) {
             return `the ${noun}`;

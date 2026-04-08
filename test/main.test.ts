@@ -6,6 +6,11 @@ Copyright(c) Ing. Luca Gian Scaringella
 
 const assert = require("chai").assert;
 import { LexoraContext, StringResourceMap, LanguagePacks, SR, StringResource } from "../src";
+import { formatFormattableResourceDefault } from "../src/lib/DefaultFormatter";
+
+function normalizeSpaces(value: string): string {
+    return value.replace(/\s/g, " ");
+}
 
 const { GrammaticalGender: DeGender } = LanguagePacks.German.Features;
 
@@ -38,7 +43,6 @@ const sampleData: Record<string, StringResourceMap> = {
         de: "{{house}}, {{car}}, {{tree}}",
     },
 
-    // dedicated templates for default pipeline tests
     "tpl.default.upper": { en: "{{house->upper}}", de: "{{house->upper}}" },
     "tpl.default.lower": { en: "{{house->lower}}", de: "{{house->lower}}" },
     "tpl.default.trim": { en: "{{spacey->trim}}", de: "{{spacey->trim}}" },
@@ -228,158 +232,565 @@ describe("Template translation and pipeline processing", () => {
 
     });
 
-    describe("Default pipeline functions", () => {
-        it("should apply uppercase as a default pipeline in English", () => {
-            const ctx = makeStrictCtx();
-            ctx.language = "en";
-            assert.equal(ctx.get("tpl.default.upper"), "HOUSE");
-        });
-
-        it("should apply uppercase as a default pipeline in German", () => {
-            const ctx = makeStrictCtx();
-            ctx.language = "de";
-            assert.equal(ctx.get("tpl.default.upper"), "HAUS");
-        });
-
-        it("should apply lowercase as a default pipeline in English", () => {
-            const ctx = makeStrictCtx();
-            ctx.language = "en";
-            assert.equal(ctx.get("tpl.default.lower"), "house");
-        });
-
-        it("should apply trim as a default pipeline in both languages", () => {
-            const ctx = makeStrictCtx();
-
-            ctx.language = "en";
-            assert.equal(ctx.get("tpl.default.trim"), "House");
-
-            ctx.language = "de";
-            assert.equal(ctx.get("tpl.default.trim"), "Haus");
-        });
-
-        describe("Additional default pipeline functions", () => {
-
-            describe("capitalize", () => {
-
-                it("should capitalize first character in English", () => {
-                    const ctx = makeStrictCtx();
-                    ctx.language = "en";
-                    assert.equal(
-                        ctx.translate("{{house->capitalize}}"),
-                        "House"
-                    );
-                });
-
-                it("should capitalize first character in German", () => {
-                    const ctx = makeStrictCtx();
-                    ctx.language = "de";
-                    assert.equal(
-                        ctx.translate("{{flower->capitalize}}"),
-                        "Blume"
-                    );
-                });
-
-                it("should not fail on empty value", () => {
-                    const ctx = makeStrictCtx();
-                    ctx.loadMultipleStringResourceTranslations({
-                        empty: { en: "", de: "" },
-                    });
-
-                    ctx.language = "en";
-                    assert.equal(
-                        ctx.translate("{{empty->capitalize}}"),
-                        ""
-                    );
-                });
-
+    describe("Basic pipeline functions", () => {
+        describe("upper", () => {
+            it("should apply uppercase as a default pipeline in English", () => {
+                const ctx = makeStrictCtx();
+                ctx.language = "en";
+                assert.equal(ctx.get("tpl.default.upper"), "HOUSE");
             });
 
-            describe("prefix", () => {
+            it("should apply uppercase as a default pipeline in German", () => {
+                const ctx = makeStrictCtx();
+                ctx.language = "de";
+                assert.equal(ctx.get("tpl.default.upper"), "HAUS");
+            });
+        });
+        describe("lower", () => {
+            it("should apply lowercase as a default pipeline in English", () => {
+                const ctx = makeStrictCtx();
+                ctx.language = "en";
+                assert.equal(ctx.get("tpl.default.lower"), "house");
+            });
+        });
+        describe("trim", () => {
+            it("should apply trim as a default pipeline in both languages", () => {
+                const ctx = makeStrictCtx();
 
-                it("should add prefix to value", () => {
-                    const ctx = makeStrictCtx();
-                    ctx.language = "en";
-                    assert.equal(
-                        ctx.translate("{{house->prefix('My ')}}"),
-                        "My house"
-                    );
-                });
+                ctx.language = "en";
+                assert.equal(ctx.get("tpl.default.trim"), "House");
 
-                it("should add prefix in German", () => {
-                    const ctx = makeStrictCtx();
-                    ctx.language = "de";
-                    assert.equal(
-                        ctx.translate("{{house->prefix('Mein ')}}"),
-                        "Mein Haus"
-                    );
-                });
+                ctx.language = "de";
+                assert.equal(ctx.get("tpl.default.trim"), "Haus");
+            });
+        });
+        describe("capitalize", () => {
 
-                it("should support chaining with prefix", () => {
-                    const ctx = makeStrictCtx();
-                    ctx.language = "en";
-                    assert.equal(
-                        ctx.translate("{{house->prefix('big ')->capitalize}}"),
-                        "Big house"
-                    );
-                });
-
+            it("should capitalize first character in English", () => {
+                const ctx = makeStrictCtx();
+                ctx.language = "en";
+                assert.equal(
+                    ctx.translate("{{house->capitalize}}"),
+                    "House"
+                );
             });
 
-            describe("suffix", () => {
-
-                it("should add suffix to value", () => {
-                    const ctx = makeStrictCtx();
-                    ctx.language = "en";
-                    assert.equal(
-                        ctx.translate("{{house->suffix(!)}}"),
-                        "house!"
-                    );
-                });
-
-                it("should add suffix in German", () => {
-                    const ctx = makeStrictCtx();
-                    ctx.language = "de";
-                    assert.equal(
-                        ctx.translate("{{flower->suffix(!)}}"),
-                        "Blume!"
-                    );
-                });
-
-                it("should add suffix in German", () => {
-                    const ctx = makeStrictCtx();
-                    ctx.language = "de";
-                    assert.equal(
-                        ctx.translate("{{flower->suffix(' (2x)')}}"),
-                        "Blume (2x)"
-                    );
-                });
-
-                it("should support chaining with suffix and uppercase", () => {
-                    const ctx = makeStrictCtx();
-                    ctx.language = "en";
-                    assert.equal(
-                        ctx.translate("{{house->suffix(!)->upper}}"),
-                        "HOUSE!"
-                    );
-                });
-
+            it("should capitalize first character in German", () => {
+                const ctx = makeStrictCtx();
+                ctx.language = "de";
+                assert.equal(
+                    ctx.translate("{{flower->capitalize}}"),
+                    "Blume"
+                );
             });
 
-            describe("prefix and suffix combined", () => {
-
-                it("should combine prefix and suffix in correct order", () => {
-                    const ctx = makeStrictCtx();
-                    ctx.language = "en";
-                    assert.equal(
-                        ctx.translate("{{house->prefix('My ')->suffix(!)}}"),
-                        "My house!"
-                    );
+            it("should not fail on empty value", () => {
+                const ctx = makeStrictCtx();
+                ctx.loadMultipleStringResourceTranslations({
+                    empty: { en: "", de: "" },
                 });
 
+                ctx.language = "en";
+                assert.equal(
+                    ctx.translate("{{empty->capitalize}}"),
+                    ""
+                );
             });
 
         });
 
+        describe("prefix", () => {
+
+            it("should add prefix to value", () => {
+                const ctx = makeStrictCtx();
+                ctx.language = "en";
+                assert.equal(
+                    ctx.translate("{{house->prefix('My ')}}"),
+                    "My house"
+                );
+            });
+
+            it("should add prefix in German", () => {
+                const ctx = makeStrictCtx();
+                ctx.language = "de";
+                assert.equal(
+                    ctx.translate("{{house->prefix('Mein ')}}"),
+                    "Mein Haus"
+                );
+            });
+
+            it("should support chaining with prefix", () => {
+                const ctx = makeStrictCtx();
+                ctx.language = "en";
+                assert.equal(
+                    ctx.translate("{{house->prefix('big ')->capitalize}}"),
+                    "Big house"
+                );
+            });
+
+        });
+
+        describe("suffix", () => {
+
+            it("should add suffix to value", () => {
+                const ctx = makeStrictCtx();
+                ctx.language = "en";
+                assert.equal(
+                    ctx.translate("{{house->suffix(!)}}"),
+                    "house!"
+                );
+            });
+
+            it("should add suffix in German", () => {
+                const ctx = makeStrictCtx();
+                ctx.language = "de";
+                assert.equal(
+                    ctx.translate("{{flower->suffix(!)}}"),
+                    "Blume!"
+                );
+            });
+
+            it("should add suffix in German", () => {
+                const ctx = makeStrictCtx();
+                ctx.language = "de";
+                assert.equal(
+                    ctx.translate("{{flower->suffix(' (2x)')}}"),
+                    "Blume (2x)"
+                );
+            });
+
+            it("should support chaining with suffix and uppercase", () => {
+                const ctx = makeStrictCtx();
+                ctx.language = "en";
+                assert.equal(
+                    ctx.translate("{{house->suffix(!)->upper}}"),
+                    "HOUSE!"
+                );
+            });
+
+        });
+
+        describe("prefix and suffix combined", () => {
+
+            it("should combine prefix and suffix in correct order", () => {
+                const ctx = makeStrictCtx();
+                ctx.language = "en";
+                assert.equal(
+                    ctx.translate("{{house->prefix('My ')->suffix(!)}}"),
+                    "My house!"
+                );
+            });
+
+        });
+        describe("number", () => {
+            it("should format number in German locale", () => {
+                const ctx = makeStrictCtx();
+                ctx.language = "de";
+
+                const out = ctx.translate("{{value->number}}", {
+                    value: 1234.56 as any,
+                });
+
+                assert.equal(out, "1.234,56");
+            });
+
+            it("should format number in English locale", () => {
+                const ctx = makeStrictCtx();
+                ctx.language = "en";
+
+                const out = ctx.translate("{{value->number}}", {
+                    value: 1234.56 as any,
+                });
+
+                assert.equal(out, "1,234.56");
+            });
+
+            it("should format number with fixed fraction digits", () => {
+                const ctx = makeStrictCtx();
+                ctx.language = "de";
+
+                const out = ctx.translate("{{value->number(2)}}", {
+                    value: 1234.5 as any,
+                });
+
+                assert.equal(out, "1.234,50");
+            });
+
+            it("should format bigint", () => {
+                const ctx = makeStrictCtx();
+                ctx.language = "en";
+
+                const out = ctx.translate("{{value->number}}", {
+                    value: 1234567890123456789n as any,
+                });
+
+                assert.equal(out, "1,234,567,890,123,456,789");
+            });
+
+            it("should throw for invalid number input in strict mode", () => {
+                const ctx = makeStrictCtx();
+                ctx.language = "en";
+
+                assert.throws(() =>
+                    ctx.translate("{{value->number}}", {
+                        value: true as any,
+                    })
+                );
+            });
+
+            it("should skip failed number pipeline in lenient mode", () => {
+                const ctx = makeLenientCtx();
+                ctx.language = "en";
+
+                assert.equal(
+                    ctx.translate("{{value->number}}", {
+                        value: true as any,
+                    }),
+                    "true"
+                );
+            });
+        });
+
+        describe("currency", () => {
+            it("should format currency with default EUR", () => {
+                const ctx = makeStrictCtx();
+                ctx.language = "de";
+
+                const out = ctx.translate("{{value->currency}}", {
+                    value: 1234.56 as any,
+                });
+
+                assert.equal(normalizeSpaces(out), "1.234,56 €");
+            });
+
+            it("should format currency with provided currency code", () => {
+                const ctx = makeStrictCtx();
+                ctx.language = "en";
+
+                const out = ctx.translate("{{value->currency(USD)}}", {
+                    value: 1234.56 as any,
+                });
+
+                assert.equal(normalizeSpaces(out), "$1,234.56");
+            });
+
+            it("should format currency with custom fraction digits", () => {
+                const ctx = makeStrictCtx();
+                ctx.language = "en";
+
+                const out = ctx.translate("{{value->currency(USD,0,0)}}", {
+                    value: 1234.56 as any,
+                });
+
+                assert.equal(normalizeSpaces(out), "$1,235");
+            });
+
+            it("should allow null/undefined values to pass through", () => {
+                const ctx = makeLenientCtx();
+                ctx.language = "en";
+
+                assert.equal(
+                    ctx.translate("{{value->currency}}", {
+                        value: undefined as any,
+                    }),
+                    "?"
+                );
+            });
+
+            it("should throw for invalid currency input in strict mode", () => {
+                const ctx = makeStrictCtx();
+                ctx.language = "en";
+
+                assert.throws(() =>
+                    ctx.translate("{{value->currency}}", {
+                        value: true as any,
+                    })
+                );
+            });
+        });
+
+        describe("date", () => {
+            const sampleDate = new Date(2025, 3, 12, 14, 5, 9);
+
+            it("should format date with medium preset by default", () => {
+                const ctx = makeStrictCtx();
+                ctx.language = "de";
+
+                const out = ctx.translate("{{value->date}}", {
+                    value: sampleDate as any,
+                });
+
+                assert.equal(normalizeSpaces(out), "12.04.2025");
+            });
+
+            it("should format date with short preset", () => {
+                const ctx = makeStrictCtx();
+                ctx.language = "en";
+
+                const out = ctx.translate("{{value->date(short)}}", {
+                    value: sampleDate as any,
+                });
+
+                assert.equal(normalizeSpaces(out), "4/12/25");
+            });
+
+            it("should format date with long preset", () => {
+                const ctx = makeStrictCtx();
+                ctx.language = "de";
+
+                const out = ctx.translate("{{value->date(long)}}", {
+                    value: sampleDate as any,
+                });
+
+                assert.equal(normalizeSpaces(out), "12. April 2025");
+            });
+
+            it("should format time-only via date(time)", () => {
+                const ctx = makeStrictCtx();
+                ctx.language = "de";
+
+                const out = ctx.translate("{{value->date(time)}}", {
+                    value: sampleDate as any,
+                });
+
+                assert.equal(normalizeSpaces(out), "14:05");
+            });
+
+            it("should format datetime preset", () => {
+                const ctx = makeStrictCtx();
+                ctx.language = "en";
+
+                const out = ctx.translate("{{value->date(datetime)}}", {
+                    value: sampleDate as any,
+                });
+
+                assert.equal(normalizeSpaces(out), "Apr 12, 2025, 2:05 PM");
+            });
+
+            it("should format iso date", () => {
+                const ctx = makeStrictCtx();
+                ctx.language = "en";
+
+                const out = ctx.translate("{{value->date(iso)}}", {
+                    value: sampleDate as any,
+                });
+
+                assert.equal(normalizeSpaces(out), sampleDate.toISOString());
+            });
+
+            it("should format custom date pattern", () => {
+                const ctx = makeStrictCtx();
+                ctx.language = "en";
+
+                const out = ctx.translate("{{value->date(dd.MM.yyyy)}}", {
+                    value: sampleDate as any,
+                });
+
+                assert.equal(out, "12.04.2025");
+            });
+
+            it("should format custom date pattern with time parts", () => {
+                const ctx = makeStrictCtx();
+                ctx.language = "en";
+
+                const out = ctx.translate("{{value->date(dd.MM.yy HH:mm:ss)}}", {
+                    value: sampleDate as any,
+                });
+
+                assert.equal(out, "12.04.25 14:05:09");
+            });
+
+            it("should preserve custom separators exactly", () => {
+                const ctx = makeStrictCtx();
+                ctx.language = "en";
+
+                const out = ctx.translate("{{value->date(yy-MM.dd)}}", {
+                    value: sampleDate as any,
+                });
+
+                assert.equal(out, "25-04.12");
+            });
+
+            it("should throw for invalid date input in strict mode", () => {
+                const ctx = makeStrictCtx();
+                ctx.language = "en";
+
+                assert.throws(() =>
+                    ctx.translate("{{value->date}}", {
+                        value: 12345 as any,
+                    })
+                );
+            });
+
+            it("should skip failed date pipeline in lenient mode", () => {
+                const ctx = makeLenientCtx();
+                ctx.language = "en";
+
+                assert.equal(
+                    ctx.translate("{{value->date}}", {
+                        value: 12345 as any,
+                    }),
+                    "12345"
+                );
+            });
+        });
+
+        describe("time", () => {
+            const sampleDate = new Date(2025, 3, 12, 14, 5, 9);
+            const sampleTimestamp = sampleDate.getTime();
+
+            it("should format time from Date with short preset by default", () => {
+                const ctx = makeStrictCtx();
+                ctx.language = "de";
+
+                const out = ctx.translate("{{value->time}}", {
+                    value: sampleDate as any,
+                });
+
+                assert.equal(normalizeSpaces(out), "14:05");
+            });
+
+            it("should format time from timestamp", () => {
+                const ctx = makeStrictCtx();
+                ctx.language = "en";
+
+                const out = ctx.translate("{{value->time(medium)}}", {
+                    value: sampleTimestamp as any,
+                });
+
+                assert.equal(normalizeSpaces(out), "2:05:09 PM");
+            });
+
+            it("should format time with long preset", () => {
+                const ctx = makeStrictCtx();
+                ctx.language = "en";
+
+                const out = ctx.translate("{{value->time(long)}}", {
+                    value: sampleDate as any,
+                });
+
+                assert.include(out, "2:05:09 PM");
+                assert.include(out, "GMT");
+            });
+
+            it("should format custom time pattern", () => {
+                const ctx = makeStrictCtx();
+                ctx.language = "en";
+
+                const out = ctx.translate("{{value->time(HH:mm)}}", {
+                    value: sampleDate as any,
+                });
+
+                assert.equal(normalizeSpaces(out), "14:05");
+            });
+
+            it("should format custom time pattern with seconds", () => {
+                const ctx = makeStrictCtx();
+                ctx.language = "en";
+
+                const out = ctx.translate("{{value->time(H:m:s)}}", {
+                    value: sampleDate as any,
+                });
+
+                assert.equal(normalizeSpaces(out), "14:5:9");
+            });
+
+            it("should throw for invalid time input in strict mode", () => {
+                const ctx = makeStrictCtx();
+                ctx.language = "en";
+
+                assert.throws(() =>
+                    ctx.translate("{{value->time}}", {
+                        value: true as any,
+                    })
+                );
+            });
+
+            it("should skip failed time pipeline in lenient mode", () => {
+                const ctx = makeLenientCtx();
+                ctx.language = "en";
+
+                assert.equal(
+                    ctx.translate("{{value->time}}", {
+                        value: true as any,
+                    }),
+                    "true"
+                );
+            });
+        });
+
+        describe("boolean", () => {
+            it("should format boolean in en true as Yes", () => {
+                const ctx = makeStrictCtx();
+                ctx.language = "en";
+
+                assert.equal(
+                    ctx.translate("{{value->boolean}}", {
+                        value: true as any,
+                    }),
+                    "Yes"
+                );
+            });
+
+            it("should format boolean in en false as No", () => {
+                const ctx = makeStrictCtx();
+                ctx.language = "en";
+
+                assert.equal(
+                    ctx.translate("{{value->boolean}}", {
+                        value: false as any,
+                    }),
+                    "No"
+                );
+            });
+
+            it("should format boolean in de true as Ja", () => {
+                const ctx = makeStrictCtx();
+                ctx.language = "de";
+
+                assert.equal(
+                    ctx.translate("{{value->boolean}}", {
+                        value: true as any,
+                    }),
+                    "Ja"
+                );
+            });
+
+            it("should format boolean in de false as Nein", () => {
+                const ctx = makeStrictCtx();
+                ctx.language = "de";
+
+                assert.equal(
+                    ctx.translate("{{value->boolean}}", {
+                        value: false as any,
+                    }),
+                    "Nein"
+                );
+            });
+
+            it("should throw for invalid boolean input in strict mode", () => {
+                const ctx = makeStrictCtx();
+                ctx.language = "en";
+
+                assert.throws(() =>
+                    ctx.translate("{{value->boolean}}", {
+                        value: 1 as any,
+                    })
+                );
+            });
+
+            it("should skip failed boolean pipeline in lenient mode", () => {
+                const ctx = makeLenientCtx();
+                ctx.language = "en";
+
+                assert.equal(
+                    ctx.translate("{{value->boolean}}", {
+                        value: 1 as any,
+                    }),
+                    "1"
+                );
+            });
+        });
     });
 
     describe("WatchableString", () => {
@@ -477,6 +888,74 @@ describe("Template translation and pipeline processing", () => {
             const ctx = makeLenientCtx();
             ctx.language = "en";
             assert.equal(ctx.translate("{{house->article(foo)}}"), "house");
+        });
+
+    });
+
+    describe("Default formatting (FormattableResource fallback)", () => {
+
+        describe("date", () => {
+            const sampleDate = new Date(2025, 3, 12);
+
+            it("should format Date using medium preset (de)", () => {
+                const result = formatFormattableResourceDefault(sampleDate, "de");
+                assert.include(result, "12");
+                assert.include(result, "2025");
+            });
+
+            it("should format Date using medium preset (en)", () => {
+                const result = formatFormattableResourceDefault(sampleDate, "en");
+
+                assert.include(result, "2025");
+            });
+        });
+
+        describe("number", () => {
+
+            it("should format number in German locale", () => {
+                const result = formatFormattableResourceDefault(1234.56, "de");
+
+                assert.equal(result, "1.234,56");
+            });
+
+            it("should format number in English locale", () => {
+                const result = formatFormattableResourceDefault(1234.56, "en");
+
+                assert.equal(result, "1,234.56");
+            });
+
+        });
+
+        describe("bigint", () => {
+
+            it("should format bigint in English locale", () => {
+                const result = formatFormattableResourceDefault(1234567890123456789n, "en");
+
+                assert.equal(result, "1,234,567,890,123,456,789");
+            });
+
+            it("should format bigint in German locale", () => {
+                const result = formatFormattableResourceDefault(1234567890123456789n, "de");
+
+                assert.equal(result, "1.234.567.890.123.456.789");
+            });
+
+        });
+
+        describe("boolean fallback", () => {
+
+            it("should fallback to string for boolean true", () => {
+                const result = formatFormattableResourceDefault(true, "en");
+
+                assert.equal(result, "true");
+            });
+
+            it("should fallback to string for boolean false", () => {
+                const result = formatFormattableResourceDefault(false, "de");
+
+                assert.equal(result, "false");
+            });
+
         });
 
     });
@@ -617,7 +1096,7 @@ describe("Template translation and pipeline processing", () => {
                 const out = SR.merge(["Haus", { gender: "n" }], ["Villa", { color: "red" }]);
                 assert.deepEqual(out, ["Villa", { gender: "n", color: "red" }]);
             });
-            
+
         });
 
     });

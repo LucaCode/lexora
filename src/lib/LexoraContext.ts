@@ -8,8 +8,10 @@ import EventEmitter from "emitix";
 import { WatchableString } from "./WatchableString";
 import { replacePlaceholdersFast } from "./Parser/PlaceholderParser";
 import { processPipeline } from "./PipelineFunction/PipelineProcessor";
+import { DynamicValue, FormattableResource } from "./DynamicValue";
+import { formatFormattableResourceDefault } from "./DefaultFormatter";
 
-export type TranslateCallContext = Record<string, StringResourceMap | StringResource>;
+export type TranslateCallContext = Record<string, DynamicValue>;
 type WatchableStringRef = WeakRef<WatchableString<LexoraContext>>;
 
 interface LexoraContextOptions {
@@ -89,7 +91,7 @@ export class LexoraContext extends EventEmitter.Protected<{
 
     public static createWithDefaults(options?: LexoraContextOptions): LexoraContext {
         const context = new LexoraContext(options);
-        context.loadDefaultPipelineFunction(Object.values(DefaultPipelineFunctions));
+        context.loadDefaultPipelineFunction(DefaultPipelineFunctions);
         context.loadLanguagePack(Object.values(LanguagePacks).map(lp => lp.pack));
         return context;
     }
@@ -222,24 +224,32 @@ export class LexoraContext extends EventEmitter.Protected<{
         return replacePlaceholdersFast(stringResourceValue, (key, pipelines) => {
             if (callPath.includes(key)) throw new Error(`Circular reference detected for key '${key}' in call path '${[...callPath, key].join("->")}'`);
 
-            let resStringResource = this._resolveKeyFromCallContext(key, callContext) ?? languageStringResources[key];
-            if (resStringResource == null) {
+            let value = this._resolveKeyFromCallContext(key, callContext) ?? languageStringResources[key];
+            if (value == null) {
                 if (this._options.ignoreMissingKeys) return this._options.defaultValueForMissingKeys ?? "?";
                 else throw new Error(`Can not resolve key '${key}' with language '${this._currentLanguage}'`);
             }
 
-            const processedValue = this._processStringResource(resStringResource, callContext, [...callPath, key]);
+            let originalStringResource: StringResource | undefined = undefined;
+            if (SR.isStringResource(value)) {
+                originalStringResource = value;
+                value = this._processStringResource(value, callContext, [...callPath, key]);
+                if(pipelines.length === 0) return value;
+            }
+            else if (pipelines.length === 0) 
+                return formatFormattableResourceDefault(value, this._currentLanguage);
 
-            if (pipelines.length === 0) return processedValue;
-            return processPipeline(processedValue, resStringResource, this._currentPipelineFunctionsMap, pipelines, this._options);
+            return processPipeline(value, originalStringResource, this._currentLanguage, 
+                this._currentPipelineFunctionsMap, pipelines, this._options);
         });
     }
 
-    private _resolveKeyFromCallContext(key: string, context: TranslateCallContext): StringResource | undefined {
+    private _resolveKeyFromCallContext(key: string, context: TranslateCallContext): StringResource | FormattableResource | undefined {
         const value = context[key];
         if (value == null) return undefined;
-        if (typeof value === "string" || Array.isArray(value)) return value;
-        return (value as StringResourceMap)[this._currentLanguage];
+        if(!Array.isArray(value) && typeof value === "object" && !(value instanceof Date)) 
+            return (value as StringResourceMap)[this._currentLanguage];
+        return value;
     }
 
     get(key: string, context: TranslateCallContext = {}): string {
@@ -278,7 +288,7 @@ export class LexoraContext extends EventEmitter.Protected<{
         const clonedTemplate = typeof template === "string" ? template : { ...template };
         const run = (context: LexoraContext) => context.translate(clonedTemplate, callContext);
         let watchableString
-        watchableString = new WatchableString(run(this), run, () => 
+        watchableString = new WatchableString(run(this), run, () =>
             this.untrackWatchableString(watchableString)
         );
         this._trackWatchableString(watchableString);
