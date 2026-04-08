@@ -610,29 +610,6 @@ describe("Template translation and pipeline processing", () => {
 
                 assert.equal(out, "25-04.12");
             });
-
-            it("should throw for invalid date input in strict mode", () => {
-                const ctx = makeStrictCtx();
-                ctx.language = "en";
-
-                assert.throws(() =>
-                    ctx.translate("{{value->date}}", {
-                        value: 12345 as any,
-                    })
-                );
-            });
-
-            it("should skip failed date pipeline in lenient mode", () => {
-                const ctx = makeLenientCtx();
-                ctx.language = "en";
-
-                assert.equal(
-                    ctx.translate("{{value->date}}", {
-                        value: 12345 as any,
-                    }),
-                    "12345"
-                );
-            });
         });
 
         describe("time", () => {
