@@ -11,7 +11,7 @@ export type StringResourceMap = Record<LanguageKey, StringResource>;
 
 export namespace SR {
     export function isStringResource(value: any): value is StringResource {
-        return typeof value === "string" || (Array.isArray(value) && 
+        return typeof value === "string" || (Array.isArray(value) && value.length <= 2 &&
             typeof value[0] === "string" && (value[1] === undefined || typeof value[1] === "object"));
     }
     export function create(value: string, metadata?: Record<string, any>): StringResource {

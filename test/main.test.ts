@@ -7,6 +7,7 @@ Copyright(c) Ing. Luca Gian Scaringella
 const assert = require("chai").assert;
 import { LexoraContext, StringResourceMap, LanguagePacks, SR, StringResource } from "../src";
 import { formatFormattableResourceDefault } from "../src/lib/DefaultFormatter";
+import "mocha";
 
 function normalizeSpaces(value: string): string {
     return value.replace(/\s/g, " ");
@@ -767,6 +768,177 @@ describe("Template translation and pipeline processing", () => {
                     "1"
                 );
             });
+        });
+
+        describe("list", () => {
+
+            it("should format a single array item from call context in English", () => {
+                const ctx = makeStrictCtx();
+                ctx.language = "en";
+
+                assert.equal(
+                    ctx.translate("{{value->list}}", {
+                        value: ["apple"] as any,
+                    }),
+                    "apple"
+                );
+            });
+
+            it("should format multiple array items as conjunction by default in English", () => {
+                const ctx = makeStrictCtx();
+                ctx.language = "en";
+
+                assert.equal(
+                    ctx.translate("{{value->list}}", {
+                        value: ["apple", "banana", "cherry"] as any,
+                    }),
+                    "apple, banana, and cherry"
+                );
+            });
+
+            it("should format multiple array items as conjunction by default in German", () => {
+                const ctx = makeStrictCtx();
+                ctx.language = "de";
+
+                assert.equal(
+                    ctx.translate("{{value->list}}", {
+                        value: ["Apfel", "Banane", "Kirsche"] as any,
+                    }),
+                    "Apfel, Banane und Kirsche"
+                );
+            });
+
+            it("should format multiple array items as disjunction using or in English", () => {
+                const ctx = makeStrictCtx();
+                ctx.language = "en";
+
+                assert.equal(
+                    ctx.translate("{{value->list(or)}}", {
+                        value: ["apple", "banana", "cherry"] as any,
+                    }),
+                    "apple, banana, or cherry"
+                );
+            });
+
+            it("should format multiple array items as disjunction using or in German", () => {
+                const ctx = makeStrictCtx();
+                ctx.language = "de";
+
+                assert.equal(
+                    ctx.translate("{{value->list(or)}}", {
+                        value: ["Apfel", "Banane", "Kirsche"] as any,
+                    }),
+                    "Apfel, Banane oder Kirsche"
+                );
+            });
+
+            it("should support explicit conjunction type", () => {
+                const ctx = makeStrictCtx();
+                ctx.language = "de";
+
+                assert.equal(
+                    ctx.translate("{{value->list(conjunction)}}", {
+                        value: ["Apfel", "Banane", "Kirsche"] as any,
+                    }),
+                    "Apfel, Banane und Kirsche"
+                );
+            });
+
+            it("should support explicit disjunction type", () => {
+                const ctx = makeStrictCtx();
+                ctx.language = "de";
+
+                assert.equal(
+                    ctx.translate("{{value->list(disjunction)}}", {
+                        value: ["Apfel", "Banane", "Kirsche"] as any,
+                    }),
+                    "Apfel, Banane oder Kirsche"
+                );
+            });
+
+            it("should support short style as second parameter", () => {
+                const ctx = makeStrictCtx();
+                ctx.language = "en";
+
+                assert.equal(
+                    ctx.translate("{{value->list(and,short)}}", {
+                        value: ["apple", "banana", "cherry"] as any,
+                    }),
+                    "apple, banana, & cherry"
+                );
+            });
+
+            it("should support long style as second parameter", () => {
+                const ctx = makeStrictCtx();
+                ctx.language = "en";
+
+                assert.equal(
+                    ctx.translate("{{value->list(and,long)}}", {
+                        value: ["apple", "banana", "cherry"] as any,
+                    }),
+                    "apple, banana, and cherry"
+                );
+            });
+
+            it("should support narrow style as second parameter", () => {
+                const ctx = makeStrictCtx();
+                ctx.language = "en";
+
+                assert.equal(
+                    ctx.translate("{{value->list(and,narrow)}}", {
+                        value: ["apple", "banana", "cherry"] as any,
+                    }),
+                    "apple, banana, cherry"
+                );
+            });
+
+            it("should process non-array input", () => {
+                const ctx = makeLenientCtx();
+                ctx.language = "en";
+                assert.equal(
+                    ctx.translate("{{value->list}}", {
+                        value: "apple" as any,
+                    }),
+                    "apple"
+                );
+            });
+
+            it("should apply capitalize to every array item before list formatting", () => {
+                const ctx = makeStrictCtx();
+                ctx.language = "en";
+
+                assert.equal(
+                    ctx.translate("{{value->capitalize->list}}", {
+                        value: ["apple", "banana", "cherry"] as any,
+                    }),
+                    "Apple, Banana, and Cherry"
+                );
+            });
+
+            it("should combine item pipeline capitalization with German list formatting", () => {
+                const ctx = makeStrictCtx();
+                ctx.language = "de";
+
+                assert.equal(
+                    ctx.translate("{{value->capitalize->list}}", {
+                        value: ["apfel", "banane", "kirsche"] as any,
+                    }),
+                    "Apfel, Banane und Kirsche"
+                );
+            });
+
+            it("should combine item pipeline capitalization with list disjunction", () => {
+                const ctx = makeStrictCtx();
+                ctx.language = "de";
+
+                assert.equal(
+                    ctx.translate("{{value->capitalize->list(or)}}", {
+                        value: ["apfel", "banane", "kirsche"] as any,
+                    }),
+                    "Apfel, Banane oder Kirsche"
+                );
+            });
+
         });
     });
 

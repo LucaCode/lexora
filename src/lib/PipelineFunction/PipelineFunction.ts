@@ -15,7 +15,8 @@ export type PipelineProcessFunction = (context: PipelineProcessContext) => Dynam
 
 export interface PipelineFunction {
     name: string;
+    type: "array" | "value";
     process: PipelineProcessFunction;
 }
 
-export type PipelineFunctionsMap = Record<string, PipelineProcessFunction>;
+export type PipelineFunctionsMap = Record<string, PipelineFunction>;

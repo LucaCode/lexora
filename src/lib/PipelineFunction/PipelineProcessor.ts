@@ -1,20 +1,38 @@
 import { SR, StringResource } from "../StringResource";
 import { DynamicValue } from "../DynamicValue";
-import { PipelineFunctionsMap } from "./PipelineFunction";
+import { PipelineFunction, PipelineFunctionsMap } from "./PipelineFunction";
 import { LanguageKey } from "../LanguageKey";
 
-export type PipelineFunctionCall = { name: string; params: string[] };
+export type DeclaredPipelineFunctionCall = { name: string; params: string[] };
+export type PipelineFunctionCall = { pipeline: PipelineFunction; params: string[] };
 
 export interface PipelineProcessOptions {
     skipFailedPipelineFunctions?: boolean;
     ignoreMissingPipelineFunctions?: boolean;
 }
 
+export function resolvePipelineFunctionCalls(pipelineFunctionCalls: DeclaredPipelineFunctionCall[], 
+    pipelineFunctionsMap: PipelineFunctionsMap, ignoreMissingPipelineFunctions?: boolean): PipelineFunctionCall[] 
+{
+    const pipelineCalls: PipelineFunctionCall[] = [];
+    for (const call of pipelineFunctionCalls) {
+        const pipelineFunction = pipelineFunctionsMap[call.name];
+        if (!pipelineFunction) {
+            if (ignoreMissingPipelineFunctions) continue;
+            else throw new Error(`Pipeline function '${call.name}' not found`);
+        }
+        pipelineCalls.push({
+            pipeline: pipelineFunction,
+            params: call.params,
+        });
+    }
+    return pipelineCalls;
+}
+
 export function processPipeline(
     value: DynamicValue, 
     originalStringResource: StringResource | undefined, 
     language: LanguageKey,
-    pipelineFunctionsMap: PipelineFunctionsMap, 
     pipelineFunctionCalls: PipelineFunctionCall[] = [], 
     options?: PipelineProcessOptions): string 
 {
@@ -26,19 +44,15 @@ export function processPipeline(
         const stringResourceMetadata = SR.getMetadata(originalStringResource);
         stringResourceContext = Object.freeze({
             value: stringResourceValue,
-            metadata: stringResourceMetadata,
+            metadata: stringResourceMetadata,   
         });
     }
 
     let currentValue = value;
     for (const pipelineFunctionCall of pipelineFunctionCalls) {
-        const pipelineFunction = pipelineFunctionsMap[pipelineFunctionCall.name];
-        if (!pipelineFunction) {
-            if (options?.ignoreMissingPipelineFunctions) continue;
-            else throw new Error(`Pipeline function '${pipelineFunctionCall.name}' not found`);
-        }
+        const processPipelineFunction = pipelineFunctionCall.pipeline.process;
         try {
-            currentValue = pipelineFunction({
+            currentValue = processPipelineFunction({
                 value: currentValue,
                 language,
                 parameters: pipelineFunctionCall.params,

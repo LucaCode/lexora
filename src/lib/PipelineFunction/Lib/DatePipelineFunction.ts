@@ -41,6 +41,7 @@ function toDate(value: unknown): Date {
 
 export const DatePipelineFunction: PipelineFunction = {
   name: "date",
+  type: "value",
   process: (context) => {
     const { value, parameters, language } = context;
     const date = toDate(value);

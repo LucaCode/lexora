@@ -4,6 +4,10 @@ GitHub: LucaCode
 Copyright(c) Ing. Luca Gian Scaringella
  */
 
+import "intl-list-format";
+import "intl-list-format/locale-data/en";
+import "intl-list-format/locale-data/de";
+
 import { BoundTemplate, boundTemplate } from "./lib/BoundTemplate";
 import { LanguageKey } from "./lib/LanguageKey";
 import { LanguagePacks } from "./lib/LanguagePack";

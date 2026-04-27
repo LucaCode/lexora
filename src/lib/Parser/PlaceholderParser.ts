@@ -1,8 +1,8 @@
-import { PipelineFunctionCall } from "../PipelineFunction/PipelineProcessor";
+import { DeclaredPipelineFunctionCall } from "../PipelineFunction/PipelineProcessor";
 
 export type PlaceholderResolver = (
   key: string,
-  pipelines: PipelineFunctionCall[],
+  pipelines: DeclaredPipelineFunctionCall[],
   raw: string
 ) => string;
 
@@ -128,7 +128,7 @@ function splitArgsQuoted(argText: string): string[] {
   return res;
 }
 
-function parseInnerFast(inner: string): { key: string; pipelines: PipelineFunctionCall[] } {
+function parseInnerFast(inner: string): { key: string; pipelines: DeclaredPipelineFunctionCall[] } {
   let i = 0;
 
   const skipWs = () => {
@@ -146,7 +146,7 @@ function parseInnerFast(inner: string): { key: string; pipelines: PipelineFuncti
   if (!key) throw new Error("Missing key");
   if (KEY_FORBIDDEN.test(key)) throw new Error("Invalid key");
 
-  const pipelines: PipelineFunctionCall[] = [];
+  const pipelines: DeclaredPipelineFunctionCall[] = [];
 
   while (true) {
     skipWs();

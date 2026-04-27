@@ -1,3 +1,4 @@
+import { ListPipelineFunction } from "./Lib/ListPipelineFunction";
 import { CurrencyPipelineFunction } from "./Lib/CurrencyPipelineFunction";
 import { DatePipelineFunction } from "./Lib/DatePipelineFunction";
 import { NumberPipelineFunction } from "./Lib/NumberPipelineFunction";
@@ -10,5 +11,6 @@ export const DefaultPipelineFunctions: PipelineFunction[] = [
     CurrencyPipelineFunction,
     DatePipelineFunction,
     TimePipelineFunction,
-    NumberPipelineFunction
+    NumberPipelineFunction,
+    ListPipelineFunction,
 ];

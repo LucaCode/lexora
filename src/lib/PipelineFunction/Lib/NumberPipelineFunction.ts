@@ -2,6 +2,7 @@ import { PipelineFunction } from "../PipelineFunction";
 
 export const NumberPipelineFunction: PipelineFunction = {
     name: "number",
+    type: "value",
     process: (context) => {
         const { value, parameters, language } = context;
 

@@ -3,6 +3,7 @@ import { PipelineFunction } from "../../../PipelineFunction/PipelineFunction";
 
 export const ArticlePipelineFunction: PipelineFunction = {
     name: "article",
+    type: "value",
     process: (context) => {
         const type = context.parameters?.[0]; // "definite" | "indefinite"
         if(context.value == null) throw new Error("article: empty noun");
@@ -21,5 +22,5 @@ export const ArticlePipelineFunction: PipelineFunction = {
         throw new Error(
             `article: invalid type (expected "definite" | "indefinite")`
         );
-    },
+    }
 };

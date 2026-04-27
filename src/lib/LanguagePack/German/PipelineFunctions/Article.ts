@@ -46,6 +46,7 @@ const DEFINITE_ARTICLES: Record<
 
 export const ArticlePipelineFunction: PipelineFunction = {
     name: "article",
+    type: "value",
     process: (context) => {
         const grammaticalCaseRaw = context.parameters?.[0];
         if (!grammaticalCaseRaw) {

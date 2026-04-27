@@ -3,6 +3,7 @@ import { PipelineFunction } from "../PipelineFunction";
 export const StringUtilPipelineFunctions: Record<string, PipelineFunction> = {
     upper: {
         name: "upper",
+        type: "value",
         process: (context) => {
             return String(context.value).toUpperCase();
         }
@@ -10,6 +11,7 @@ export const StringUtilPipelineFunctions: Record<string, PipelineFunction> = {
 
     lower: {
         name: "lower",
+        type: "value",
         process: (context) => {
             return String(context.value).toLowerCase();
         }
@@ -17,6 +19,7 @@ export const StringUtilPipelineFunctions: Record<string, PipelineFunction> = {
 
     capitalize: {
         name: "capitalize",
+        type: "value",
         process: (context) => {
             if (!context.value) return context.value;
             const str = String(context.value);
@@ -26,6 +29,7 @@ export const StringUtilPipelineFunctions: Record<string, PipelineFunction> = {
 
     trim: {
         name: "trim",
+        type: "value",
         process: (context) => {
             return String(context.value).trim();
         }
@@ -33,6 +37,7 @@ export const StringUtilPipelineFunctions: Record<string, PipelineFunction> = {
 
     prefix: {
         name: "prefix",
+        type: "value",
         process: (context) => {
             const prefix = context.parameters?.[0] ?? "";
             return prefix + String(context.value);
@@ -41,6 +46,7 @@ export const StringUtilPipelineFunctions: Record<string, PipelineFunction> = {
 
     suffix: {
         name: "suffix",
+        type: "value",
         process: (context) => {
             const suffix = context.parameters?.[0] ?? "";
             return String(context.value) + suffix;
