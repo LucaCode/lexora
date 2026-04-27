@@ -155,7 +155,11 @@ function parseInnerFast(inner: string): { key: string; pipelines: DeclaredPipeli
 
     skipWs();
     const nameStart = i;
-    while (i < inner.length && isNameChar(inner[i])) i++;
+    while (
+      i < inner.length &&
+      isNameChar(inner[i]) &&
+      !(inner[i] === "-" && inner[i + 1] === ">")
+    ) i++;
     const name = inner.slice(nameStart, i);
     if (!name) throw new Error("Missing pipeline name");
 
