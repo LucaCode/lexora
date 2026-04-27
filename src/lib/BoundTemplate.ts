@@ -15,7 +15,7 @@ export type BoundTemplate = {
     [BoundTemplateKey]: true
 };
 
-export function boundTemplate(template: string | StringResourceMap, context: TranslateCallContext = {}): BoundTemplate {
+export function boundTemplate(template: string | StringResourceMap = "", context: TranslateCallContext = {}): BoundTemplate {
     return { template, context, [BoundTemplateKey]: true };
 }   
 
