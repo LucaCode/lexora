@@ -17,6 +17,7 @@
     "alwaysStrict" : true,
     "noUnusedLocals": true,
     "stripInternal": true,
+    "skipLibCheck": true,
     "types": ["jest", "mocha", "chai", "node"]
   },
   "include": [
