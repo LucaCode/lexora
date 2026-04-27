@@ -2,8 +2,8 @@
   "compilerOptions": {
     "target": "es2021",
     "lib": ["es2021", "dom"],
-    "module": "commonjs",
-    "moduleResolution": "node",
+    "module": "node16",
+    "moduleResolution": "node16",
     "strictPropertyInitialization" : false,
     "sourceMap": true,
     "emitDecoratorMetadata": true,
@@ -12,10 +12,12 @@
     "noImplicitAny": false,
     "declaration": true,
     "outDir": "dist",
+    "rootDir": "./src",
     "strict": true,
     "alwaysStrict" : true,
     "noUnusedLocals": true,
-    "stripInternal": true
+    "stripInternal": true,
+    "types": ["jest", "mocha", "chai", "node"]
   },
   "include": [
     "src/**/*"
