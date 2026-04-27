@@ -10,6 +10,7 @@ import { replacePlaceholdersFast } from "./Parser/PlaceholderParser";
 import { processPipeline } from "./PipelineFunction/PipelineProcessor";
 import { DynamicValue, FormattableResource } from "./DynamicValue";
 import { formatFormattableResourceDefault } from "./DefaultFormatter";
+import { BoundTemplate, isBoundTemplate } from "./BoundTemplate";
 
 export type TranslateCallContext = Record<string, DynamicValue | undefined>;
 type WatchableStringRef = WeakRef<WatchableString<LexoraContext>>;
@@ -270,22 +271,30 @@ export class LexoraContext extends EventEmitter.Protected<{
         return watchableString;
     }
 
-    translate(template: StringResourceMap | string, context: TranslateCallContext = {}): string {
+    translate(template: BoundTemplate): string
+    translate(template: StringResourceMap | string, context?: TranslateCallContext): string
+    translate(value: StringResourceMap | string | BoundTemplate, context: TranslateCallContext = {}): string {
+        if(isBoundTemplate(value)) return this.translate(value.template, { ...value.context, ...context });
+
         let stringResource: StringResource;
-        if (typeof template === "object") {
-            stringResource = template[this._currentLanguage];
+        if (typeof value === "object") {
+            stringResource = value[this._currentLanguage];
             if (stringResource == null) {
                 if (this._options.ignoreMissingKeys) return this._options.defaultValueForMissingKeys ?? "?";
                 else throw new Error(`Can not resolve template for language '${this._currentLanguage}'`);
             }
         }
-        else stringResource = template;
+        else stringResource = value;
         return this._processStringResource(stringResource, context, ["[template]"]);
     }
 
-    translateWatch(template: StringResourceMap | string, context: TranslateCallContext = {}): WatchableString<LexoraContext> {
+    translateWatch(template: BoundTemplate): WatchableString<LexoraContext>
+    translateWatch(template: StringResourceMap | string, context?: TranslateCallContext): WatchableString<LexoraContext>
+    translateWatch(value: StringResourceMap | string | BoundTemplate, context: TranslateCallContext = {}): WatchableString<LexoraContext> {
+        if(isBoundTemplate(value)) return this.translateWatch(value.template, { ...value.context, ...context });
+
         const callContext = { ...context };
-        const clonedTemplate = typeof template === "string" ? template : { ...template };
+        const clonedTemplate = typeof value === "string" ? value : { ...value };
         const run = (context: LexoraContext) => context.translate(clonedTemplate, callContext);
         let watchableString
         watchableString = new WatchableString(run(this), run, () =>

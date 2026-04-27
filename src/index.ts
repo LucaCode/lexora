@@ -4,6 +4,7 @@ GitHub: LucaCode
 Copyright(c) Ing. Luca Gian Scaringella
  */
 
+import { BoundTemplate, boundTemplate } from "./lib/BoundTemplate";
 import { LanguageKey } from "./lib/LanguageKey";
 import { LanguagePacks } from "./lib/LanguagePack";
 import { LanguagePack } from "./lib/LanguagePack/LanguagePack";
@@ -22,5 +23,7 @@ export {
     PipelineFunction,
     WatchableString,
     TranslateCallContext,
+    boundTemplate,
+    BoundTemplate,
     SR
 };
