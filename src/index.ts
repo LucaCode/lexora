@@ -8,7 +8,7 @@ import "intl-list-format";
 import "intl-list-format/locale-data/en";
 import "intl-list-format/locale-data/de";
 
-import { BoundTemplate, boundTemplate } from "./lib/BoundTemplate";
+import { BoundTemplate, boundTemplate, isBoundTemplate } from "./lib/BoundTemplate";
 import { LanguageKey } from "./lib/LanguageKey";
 import { LanguagePacks } from "./lib/LanguagePack";
 import { LanguagePack } from "./lib/LanguagePack/LanguagePack";
@@ -28,6 +28,7 @@ export {
     WatchableString,
     TranslateCallContext,
     boundTemplate,
+    isBoundTemplate,
     BoundTemplate,
     SR
 };
