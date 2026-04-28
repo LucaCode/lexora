@@ -16,6 +16,7 @@ import { LexoraContext, TranslateCallContext } from "./lib/LexoraContext";
 import { PipelineFunction } from "./lib/PipelineFunction/PipelineFunction";
 import { StringResource, StringResourceMap, SR } from "./lib/StringResource";
 import { WatchableString } from "./lib/WatchableString";
+import { Template } from "./lib/Types";
 
 export {
     LanguageKey,
@@ -30,5 +31,6 @@ export {
     boundTemplate,
     isBoundTemplate,
     BoundTemplate,
-    SR
+    SR,
+    Template
 };
