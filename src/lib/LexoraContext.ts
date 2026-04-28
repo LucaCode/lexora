@@ -11,7 +11,7 @@ import { PipelineFunctionCall, processPipeline, resolvePipelineFunctionCalls } f
 import { DynamicValue, FormattableResource } from "./DynamicValue";
 import { formatFormattableResourceDefault } from "./DefaultFormatter";
 import { BoundTemplate, isBoundTemplate } from "./BoundTemplate";
-import { SingleOrArray } from "./Types";
+import { SingleOrArray, Template } from "./Types";
 
 export type TranslateCallContext = Record<string, DynamicValue | undefined>;
 type WatchableStringRef = WeakRef<WatchableString<LexoraContext>>;
@@ -294,7 +294,7 @@ export class LexoraContext extends EventEmitter.Protected<{
 
     translate(template: BoundTemplate): string
     translate(template: StringResourceMap | string, context?: TranslateCallContext): string
-    translate(value: StringResourceMap | string | BoundTemplate, context: TranslateCallContext = {}): string {
+    translate(value: Template, context: TranslateCallContext = {}): string {
         if (isBoundTemplate(value)) return this.translate(value.template, { ...value.context, ...context });
 
         let stringResource: StringResource;
@@ -311,7 +311,7 @@ export class LexoraContext extends EventEmitter.Protected<{
 
     translateWatch(template: BoundTemplate): WatchableString<LexoraContext>
     translateWatch(template: StringResourceMap | string, context?: TranslateCallContext): WatchableString<LexoraContext>
-    translateWatch(value: StringResourceMap | string | BoundTemplate, context: TranslateCallContext = {}): WatchableString<LexoraContext> {
+    translateWatch(value: Template, context: TranslateCallContext = {}): WatchableString<LexoraContext> {
         if (isBoundTemplate(value)) return this.translateWatch(value.template, { ...value.context, ...context });
 
         const callContext = { ...context };
