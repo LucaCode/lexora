@@ -293,7 +293,7 @@ export class LexoraContext extends EventEmitter.Protected<{
     }
 
     translate(template: BoundTemplate): string
-    translate(template: StringResourceMap | string, context?: TranslateCallContext): string
+    translate(template: StringResource | StringResourceMap | string, context?: TranslateCallContext): string
     translate(value: Template, context: TranslateCallContext = {}): string {
         if (isBoundTemplate(value)) return this.translate(value.template, { ...value.context, ...context });
 
@@ -310,7 +310,7 @@ export class LexoraContext extends EventEmitter.Protected<{
     }
 
     translateWatch(template: BoundTemplate): WatchableString<LexoraContext>
-    translateWatch(template: StringResourceMap | string, context?: TranslateCallContext): WatchableString<LexoraContext>
+    translateWatch(template: StringResource | StringResourceMap | string, context?: TranslateCallContext): WatchableString<LexoraContext>
     translateWatch(value: Template, context: TranslateCallContext = {}): WatchableString<LexoraContext> {
         if (isBoundTemplate(value)) return this.translateWatch(value.template, { ...value.context, ...context });
 
