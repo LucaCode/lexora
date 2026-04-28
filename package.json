@@ -1,6 +1,6 @@
 {
   "name": "lexora",
-  "version": "1.3.3",
+  "version": "1.3.4",
   "description": "A lightweight TypeScript helper for managing multi-language strings with optional grammatical support.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -12,7 +12,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/LucaCode/lingo.git"
+    "url": "https://github.com/LucaCode/lexora.git"
   },
   "author": {
     "name": "Ing. Luca Gian Scaringella",
