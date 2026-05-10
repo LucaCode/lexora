@@ -186,6 +186,45 @@ function parseInnerFast(inner: string): { key: string; pipelines: DeclaredPipeli
   return { key, pipelines };
 }
 
+function findClosingPlaceholder(input: string, start: number): number {
+  let i = start;
+  let quote: "'" | '"' | null = null;
+
+  while (i < input.length - 1) {
+    const ch = input[i];
+
+    if (quote) {
+      if (ch === "\\") {
+        i += 2;
+        continue;
+      }
+
+      if (ch === quote) {
+        quote = null;
+        i++;
+        continue;
+      }
+
+      i++;
+      continue;
+    }
+
+    if (ch === "'" || ch === '"') {
+      quote = ch;
+      i++;
+      continue;
+    }
+
+    if (ch === "}" && input[i + 1] === "}") {
+      return i;
+    }
+
+    i++;
+  }
+
+  return -1;
+}
+
 export function replacePlaceholdersFast(
   input: string,
   resolver: PlaceholderResolver
@@ -202,7 +241,7 @@ export function replacePlaceholdersFast(
 
     out += input.slice(i, open);
 
-    const close = input.indexOf("}}", open + 2);
+    const close = findClosingPlaceholder(input, open + 2);
     if (close === -1) {
       out += input.slice(open);
       break;

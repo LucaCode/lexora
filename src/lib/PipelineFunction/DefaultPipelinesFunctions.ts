@@ -6,6 +6,7 @@ import { StringUtilPipelineFunctions } from "./Lib/StringUtilPipelineFunctions";
 import { TimePipelineFunction } from "./Lib/TimePipelineFunction";
 import { PipelineFunction } from "./PipelineFunction";
 import { FormPipelineFunction } from "./Lib/FormPipelineFunction";
+import { SwitchPipelineFunction } from "./Lib/SwitchPipelineFunction";
 
 export const DefaultPipelineFunctions: PipelineFunction[] = [
     ...Object.values(StringUtilPipelineFunctions),
@@ -14,5 +15,6 @@ export const DefaultPipelineFunctions: PipelineFunction[] = [
     TimePipelineFunction,
     NumberPipelineFunction,
     ListPipelineFunction,
-    FormPipelineFunction
+    FormPipelineFunction,
+    SwitchPipelineFunction
 ];

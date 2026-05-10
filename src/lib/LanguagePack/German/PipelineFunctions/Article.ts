@@ -54,7 +54,7 @@ const DEFINITE_PLURAL_ARTICLES: Record<DeGrammaticalCase, string> = {
 export const ArticlePipelineFunction: PipelineFunction = {
     name: "article",
     type: "value",
-    phase: "transform",
+    phase: "format",
     process: (context) => {
         const grammaticalCaseRaw = context.parameters?.[0];
 

@@ -263,12 +263,13 @@ export class LexoraContext extends EventEmitter.Protected<{
                      this._currentLanguage, selectPipelines, callContext, executionContext, this._options);
                 else value = SR.getDefaultValue(value);
             }
-            value = this._processStringResource(value, callContext, [...callPath, key]);
-            if (pipelines.length === 0) return value;
         }
-
         if (transformPipelines.length > 0) value = processPipeline(value, originalStringResource, 
             this._currentLanguage, transformPipelines, callContext, executionContext, this._options);
+
+        if(SR.isStringResource(value))
+            value = this._processStringResource(value, callContext, [...callPath, key]);
+
         if (formatPipelines.length > 0) value = processPipeline(value, originalStringResource, 
             this._currentLanguage, formatPipelines, callContext, executionContext, this._options);
 

@@ -1091,6 +1091,117 @@ describe("Template translation and pipeline processing", () => {
             });
 
         });
+
+        describe("switch", () => {
+
+            enum UserGender {
+                Male = "male",
+                Female = "female",
+            }
+
+            it("should select male string based on context value", () => {
+                const ctx = makeStrictCtx();
+
+                ctx.loadMultipleStringResourceTranslations({
+                    maleUser: { en: "user", de: "Benutzer" },
+                    femaleUser: { en: "user", de: "Benutzerin" },
+                });
+
+                ctx.language = "de";
+
+                assert.equal(
+                    ctx.translate("{{gender->switch('male:{{maleUser}}','female:{{femaleUser}}')}}", {
+                        gender: UserGender.Male as any,
+                    }),
+                    "Benutzer"
+                );
+            });
+
+            it("should select female string based on context value", () => {
+                const ctx = makeStrictCtx();
+
+                ctx.loadMultipleStringResourceTranslations({
+                    maleUser: { en: "user", de: "Benutzer" },
+                    femaleUser: { en: "user", de: "Benutzerin" },
+                });
+
+                ctx.language = "de";
+
+                assert.equal(
+                    ctx.translate("{{gender->switch('male:{{maleUser}}','female:{{femaleUser}}')}}", {
+                        gender: UserGender.Female as any,
+                    }),
+                    "Benutzerin"
+                );
+            });
+
+            
+            it("should select female string based on context value with executed sub pipelines", () => {
+                const ctx = makeStrictCtx();
+
+                ctx.loadMultipleStringResourceTranslations({
+                    maleUser: { en: "user", de: "Benutzer" },
+                    femaleUser: { en: "user", de: "Benutzerin" },
+                });
+
+                ctx.language = "de";
+
+                assert.equal(
+                    ctx.translate("{{gender->switch('male:{{maleUser->upper}}','female:{{femaleUser->upper}}')}}", {
+                        gender: UserGender.Female as any,
+                    }),
+                    "BENUTZERIN"
+                );
+            });
+
+            it("should support plain string switch results", () => {
+                const ctx = makeStrictCtx();
+                ctx.language = "en";
+
+                assert.equal(
+                    ctx.translate("{{gender->switch('male:Actor','female:Actress')}}", {
+                        gender: UserGender.Female as any,
+                    }),
+                    "Actress"
+                );
+            });
+
+            it("should throw when no matching case exists in strict mode", () => {
+                const ctx = makeStrictCtx();
+                ctx.language = "en";
+
+                assert.throws(() =>
+                    ctx.translate("{{gender->switch('male:User','female:User')}}", {
+                        gender: "other" as any,
+                    })
+                );
+            });
+
+            it("should support default case", () => {
+                const ctx = makeStrictCtx();
+                ctx.language = "en";
+
+                assert.equal(
+                    ctx.translate("{{gender->switch('male:Male user','female:Female user','_:User')}}", {
+                        gender: "other" as any,
+                    }),
+                    "User"
+                );
+            });
+
+            it("should work with chained pipelines after switch", () => {
+                const ctx = makeStrictCtx();
+                ctx.language = "de";
+
+                assert.equal(
+                    ctx.translate("{{gender->switch('male:benutzer','female:benutzerin')->capitalize}}", {
+                        gender: UserGender.Female as any,
+                    }),
+                    "Benutzerin"
+                );
+            });
+
+        });
     });
 
     describe("WatchableString", () => {
