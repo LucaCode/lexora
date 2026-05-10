@@ -1,10 +1,12 @@
-import { SR, StringResource } from "../StringResource";
+import { StringResource } from "../StringResource";
 import { DynamicValue } from "../DynamicValue";
 import { PipelineFunction, PipelineFunctionsMap } from "./PipelineFunction";
 import { LanguageKey } from "../LanguageKey";
+import { TranslateCallContext } from "../..";
+import { ensureString } from "../DefaultFormatter";
 
 export type DeclaredPipelineFunctionCall = { name: string; params: string[] };
-export type PipelineFunctionCall = { pipeline: PipelineFunction; params: string[] };
+export type PipelineFunctionCall<T extends PipelineFunction = PipelineFunction> = { pipeline: T; params: string[] };
 
 export interface PipelineProcessOptions {
     skipFailedPipelineFunctions?: boolean;
@@ -33,20 +35,12 @@ export function processPipeline(
     value: DynamicValue, 
     originalStringResource: StringResource | undefined, 
     language: LanguageKey,
-    pipelineFunctionCalls: PipelineFunctionCall[] = [], 
-    options?: PipelineProcessOptions): string 
+    pipelineFunctionCalls: PipelineFunctionCall[] = [],
+    callContext: Readonly<TranslateCallContext>,
+    executionContext: Record<string, any>,
+    options: PipelineProcessOptions): string
 {
-    if (pipelineFunctionCalls.length === 0) return originalStringResource ? String(SR.getValue(originalStringResource)) : String(value);
-
-    let stringResourceContext: Readonly<{ value: string; metadata: Record<string, any> }> | undefined = undefined;
-    if (originalStringResource) {
-        const stringResourceValue = SR.getValue(originalStringResource);
-        const stringResourceMetadata = SR.getMetadata(originalStringResource);
-        stringResourceContext = Object.freeze({
-            value: stringResourceValue,
-            metadata: stringResourceMetadata,   
-        });
-    }
+    if (pipelineFunctionCalls.length === 0) return ensureString(value, language);
 
     let currentValue = value;
     for (const pipelineFunctionCall of pipelineFunctionCalls) {
@@ -56,7 +50,9 @@ export function processPipeline(
                 value: currentValue,
                 language,
                 parameters: pipelineFunctionCall.params,
-                stringResource: stringResourceContext,
+                stringResource: originalStringResource,
+                callContext,
+                executionContext,
             });
         }
         catch (err) {
@@ -64,5 +60,5 @@ export function processPipeline(
             else throw err;
         }
     }
-    return String(currentValue);
+    return ensureString(currentValue, language);
 }

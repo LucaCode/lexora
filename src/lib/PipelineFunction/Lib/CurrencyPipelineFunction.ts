@@ -3,6 +3,7 @@ import { PipelineFunction } from "../PipelineFunction";
 export const CurrencyPipelineFunction: PipelineFunction = {
     name: "currency",
     type: "value",
+    phase: "format",
     process: (context) => {
         const { value, parameters, language } = context;
 

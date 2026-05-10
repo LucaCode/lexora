@@ -2,14 +2,14 @@ import { LanguageKey } from "./LanguageKey";
 import { LanguagePacks } from "./LanguagePack";
 import { LanguagePack } from "./LanguagePack/LanguagePack";
 import { DefaultPipelineFunctions } from "./PipelineFunction/DefaultPipelinesFunctions";
-import { PipelineFunction, PipelineFunctionsMap } from "./PipelineFunction/PipelineFunction";
+import { PipelineFunction, PipelineFunctionsMap, ValuePipelineFunction } from "./PipelineFunction/PipelineFunction";
 import { SR, StringResource, StringResourceMap } from "./StringResource";
 import EventEmitter from "emitix";
 import { WatchableString } from "./WatchableString";
 import { replacePlaceholdersFast } from "./Parser/PlaceholderParser";
 import { PipelineFunctionCall, processPipeline, resolvePipelineFunctionCalls } from "./PipelineFunction/PipelineProcessor";
 import { DynamicValue, FormattableResource } from "./DynamicValue";
-import { formatFormattableResourceDefault } from "./DefaultFormatter";
+import { formatFormattableResourceDefault, resolveStringResourceMaps } from "./DefaultFormatter";
 import { BoundTemplate, isBoundTemplate } from "./BoundTemplate";
 import { SingleOrArray, Template } from "./Types";
 
@@ -219,7 +219,7 @@ export class LexoraContext extends EventEmitter.Protected<{
         callContext: TranslateCallContext,
         callPath: string[]
     ): string {
-        const stringResourceValue = SR.getValue(stringResource);
+        const stringResourceValue = SR.getDefaultValue(stringResource);
         if (stringResourceValue.indexOf("{{") === -1) return stringResourceValue;
 
         const languageStringResources = this._stringResources[this._currentLanguage] ?? {};
@@ -232,46 +232,54 @@ export class LexoraContext extends EventEmitter.Protected<{
                 else throw new Error(`Can not resolve key '${key}' with language '${this._currentLanguage}'`);
             }
 
-            const pipelineFunctionCalls = resolvePipelineFunctionCalls(pipelines, this._currentPipelineFunctionsMap, 
+            const pipelineFunctionCalls = resolvePipelineFunctionCalls(pipelines, this._currentPipelineFunctionsMap,
                 this._options.ignoreMissingPipelineFunctions);
-            const valuePipelineFunctionCalls = pipelineFunctionCalls.filter(call => call.pipeline.type === "value");
+            const valuePipelineFunctionCalls = pipelineFunctionCalls.filter(call => call.pipeline.type === "value") as
+                PipelineFunctionCall<ValuePipelineFunction>[];
 
-            if(!SR.isStringResource(value) && Array.isArray(value)) {
+            if (!SR.isStringResource(value) && Array.isArray(value)) {
                 const arrayPipelineFunctionCalls = pipelineFunctionCalls.filter(call => call.pipeline.type === "array");
                 const values = value.map(v => this._processValue(key, v, callContext, valuePipelineFunctionCalls, callPath));
                 if (pipelines.length === 0) return values.join(" ");
-                else return processPipeline(values, undefined, this._currentLanguage,arrayPipelineFunctionCalls, this._options);
+                else return processPipeline(values, undefined, this._currentLanguage, 
+                    arrayPipelineFunctionCalls, callContext, {}, this._options);
             }
             else return this._processValue(key, value, callContext, valuePipelineFunctionCalls, callPath);
         });
     }
 
-    private _processValue(key: string, value: StringResource | FormattableResource, 
-        callContext: TranslateCallContext, pipelines: PipelineFunctionCall[], callPath: string[]): string 
-    {
+    private _processValue(key: string, value: StringResource | FormattableResource,
+        callContext: TranslateCallContext, pipelines: PipelineFunctionCall<ValuePipelineFunction>[], callPath: string[]): string {
+        const transformPipelines = pipelines.filter(call => call.pipeline.phase === "transform");
+        const formatPipelines = pipelines.filter(call => call.pipeline.phase === "format");
+
+        const executionContext: Record<string, any> = {};
         let originalStringResource: StringResource | undefined = undefined;
         if (SR.isStringResource(value)) {
             originalStringResource = value;
+            if (SR.hasForms(value)) {
+                const selectPipelines = pipelines.filter(call => call.pipeline.phase === "select");
+                if (selectPipelines.length > 0) value = processPipeline(value, value,
+                     this._currentLanguage, selectPipelines, callContext, executionContext, this._options);
+                else value = SR.getDefaultValue(value);
+            }
             value = this._processStringResource(value, callContext, [...callPath, key]);
             if (pipelines.length === 0) return value;
         }
-        else if (pipelines.length === 0)
-            return formatFormattableResourceDefault(value, this._currentLanguage);
 
-        return processPipeline(value, originalStringResource, this._currentLanguage, pipelines, this._options);
+        if (transformPipelines.length > 0) value = processPipeline(value, originalStringResource, 
+            this._currentLanguage, transformPipelines, callContext, executionContext, this._options);
+        if (formatPipelines.length > 0) value = processPipeline(value, originalStringResource, 
+            this._currentLanguage, formatPipelines, callContext, executionContext, this._options);
+
+        return typeof value === "string" ? value : formatFormattableResourceDefault(value, this._currentLanguage);
     }
 
     private _resolveKeyFromCallContext(key: string, context: TranslateCallContext): SingleOrArray<StringResource | FormattableResource> | undefined {
         const value = context[key];
         if (value == null) return undefined;
-        if (Array.isArray(value) && !SR.isStringResource(value)) return value.map(v => this._resolveStringResourceMaps(v));
-        else return this._resolveStringResourceMaps(value);
-    }
-
-    private _resolveStringResourceMaps(value: (StringResource | StringResourceMap | FormattableResource)): StringResource | FormattableResource {
-        if (!Array.isArray(value) && typeof value === "object" && !(value instanceof Date))
-            return (value as StringResourceMap)[this._currentLanguage];
-        else return value;
+        if (Array.isArray(value) && !SR.isStringResource(value)) return value.map(v => resolveStringResourceMaps(v, this._currentLanguage));
+        else return resolveStringResourceMaps(value, this._currentLanguage);
     }
 
     get(key: string, context: TranslateCallContext = {}): string {
@@ -298,7 +306,7 @@ export class LexoraContext extends EventEmitter.Protected<{
         if (isBoundTemplate(value)) return this.translate(value.template, { ...value.context, ...context });
 
         let stringResource: StringResource;
-        if (typeof value === "object") {
+        if (typeof value === "object" && !SR.isForms(value)) {
             stringResource = value[this._currentLanguage];
             if (stringResource == null) {
                 if (this._options.ignoreMissingKeys) return this._options.defaultValueForMissingKeys ?? "?";

@@ -48,6 +48,14 @@ const sampleData: Record<string, StringResourceMap> = {
     "tpl.default.lower": { en: "{{house->lower}}", de: "{{house->lower}}" },
     "tpl.default.trim": { en: "{{spacey->trim}}", de: "{{spacey->trim}}" },
     spacey: { en: "  House  ", de: "  Haus  " },
+    point: {
+        en: [{ _: "point", other: "points" }, {}],
+        de: [{ _: "Punkt", other: "Punkte" }, { gender: DeGender.Masculine }],
+    },
+    appleCountable: {
+        en: [{ _: "apple", other: "apples" }, {}],
+        de: [{ _: "Apfel", other: "Äpfel" }, { gender: DeGender.Masculine }],
+    },
 };
 
 function makeStrictCtx() {
@@ -936,6 +944,149 @@ describe("Template translation and pipeline processing", () => {
                         value: ["apfel", "banane", "kirsche"] as any,
                     }),
                     "Apfel, Banane oder Kirsche"
+                );
+            });
+
+        });
+
+        describe("form", () => {
+
+            it("should use default form when no parameter is provided", () => {
+                const ctx = makeStrictCtx();
+                ctx.language = "de";
+
+                assert.equal(
+                    ctx.translate("{{point->form}}"),
+                    "Punkt"
+                );
+            });
+
+            it("should select explicit form using :formName", () => {
+                const ctx = makeStrictCtx();
+                ctx.language = "de";
+
+                assert.equal(
+                    ctx.translate("{{point->form(:other)}}"),
+                    "Punkte"
+                );
+            });
+
+            it("should select singular form for count 1 using Intl.PluralRules", () => {
+                const ctx = makeStrictCtx();
+                ctx.language = "de";
+
+                assert.equal(
+                    ctx.translate("{{point->form(count)}}", {
+                        count: 1 as any,
+                    }),
+                    "Punkt"
+                );
+            });
+
+            it("should select plural form for count greater than 1 using Intl.PluralRules", () => {
+                const ctx = makeStrictCtx();
+                ctx.language = "de";
+
+                assert.equal(
+                    ctx.translate("{{count}} {{point->form(count)}}", {
+                        count: 200 as any,
+                    }),
+                    "200 Punkte"
+                );
+            });
+
+            it("should work with English plural forms", () => {
+                const ctx = makeStrictCtx();
+                ctx.language = "en";
+
+                assert.equal(
+                    ctx.translate("{{count}} {{point->form(count)}}", {
+                        count: 1 as any,
+                    }),
+                    "1 point"
+                );
+
+                assert.equal(
+                    ctx.translate("{{count}} {{point->form(count)}}", {
+                        count: 2 as any,
+                    }),
+                    "2 points"
+                );
+            });
+
+            it("should allow chaining transform pipelines after form", () => {
+                const ctx = makeStrictCtx();
+                ctx.language = "de";
+
+                assert.equal(
+                    ctx.translate("{{point->form(count)->upper}}", {
+                        count: 200 as any,
+                    }),
+                    "PUNKTE"
+                );
+            });
+
+        });
+
+        describe("form + article", () => {
+
+            it("should use German singular article after selecting singular form", () => {
+                const ctx = makeStrictCtx();
+                ctx.language = "de";
+
+                assert.equal(
+                    ctx.translate("{{point->form(count)->article(nominative)}}", {
+                        count: 1 as any,
+                    }),
+                    "der Punkt"
+                );
+            });
+
+            it("should use German plural article after selecting plural form", () => {
+                const ctx = makeStrictCtx();
+                ctx.language = "de";
+
+                assert.equal(
+                    ctx.translate("{{point->form(count)->article(nominative)}}", {
+                        count: 200 as any,
+                    }),
+                    "die Punkte"
+                );
+            });
+
+            it("should use German dative plural article after selecting plural form", () => {
+                const ctx = makeStrictCtx();
+                ctx.language = "de";
+
+                assert.equal(
+                    ctx.translate("{{point->form(count)->article(dative)}}", {
+                        count: 200 as any,
+                    }),
+                    "den Punkte"
+                );
+            });
+
+            it("should use English indefinite article for singular form", () => {
+                const ctx = makeStrictCtx();
+                ctx.language = "en";
+
+                assert.equal(
+                    ctx.translate("{{appleCountable->form(count)->article(indefinite)}}", {
+                        count: 1 as any,
+                    }),
+                    "an apple"
+                );
+            });
+
+            it("should omit English indefinite article for plural form", () => {
+                const ctx = makeStrictCtx();
+                ctx.language = "en";
+
+                assert.equal(
+                    ctx.translate("{{appleCountable->form(count)->article(indefinite)}}", {
+                        count: 2 as any,
+                    }),
+                    "apples"
                 );
             });
 

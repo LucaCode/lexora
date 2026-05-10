@@ -1,22 +1,54 @@
 import { DynamicValue } from "../DynamicValue";
 import { LanguageKey } from "../LanguageKey";
+import { TranslateCallContext } from "../LexoraContext";
+import { StringResource } from "../StringResource";
 
 export interface PipelineProcessContext {
+    /**
+     * @description
+     * The current value being processed in the pipeline.
+     *  This value can be transformed by each pipeline function and is passed to the next function in the pipeline.
+     */
     value: DynamicValue;
-    parameters: string[],
+    parameters: string[];
     language: LanguageKey;
-    stringResource: {
-        value: string;
-        metadata: Record<string, any>;
-    } | undefined;
+    /**
+     * @description
+     * The original string resource that is being processed, if available.
+     *  This can be useful for pipeline functions that need access to the metadata of the original string resource.
+     */
+    stringResource: Readonly<StringResource> | undefined;
+    callContext: Readonly<TranslateCallContext>
+    /**
+     * @description
+     * A context object that can be used to store and share data between pipeline 
+     * functions during the processing of a single translation call.
+     */
+    executionContext: Record<string, any>;
 }
 
-export type PipelineProcessFunction = (context: PipelineProcessContext) => DynamicValue;
+export type PipelineProcessFunction =
+    (context: PipelineProcessContext) => DynamicValue;
 
-export interface PipelineFunction {
+interface BasePipelineFunction {
     name: string;
-    type: "array" | "value";
     process: PipelineProcessFunction;
 }
 
-export type PipelineFunctionsMap = Record<string, PipelineFunction>;
+export interface ValuePipelineFunction
+    extends BasePipelineFunction {
+    type: "value";
+    phase: "select" | "transform" | "format";
+}
+
+export interface ArrayPipelineFunction
+    extends BasePipelineFunction {
+    type: "array";
+}
+
+export type PipelineFunction =
+    | ValuePipelineFunction
+    | ArrayPipelineFunction;
+
+export type PipelineFunctionsMap =
+    Record<string, PipelineFunction>;
