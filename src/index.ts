@@ -7,6 +7,7 @@ Copyright(c) Ing. Luca Gian Scaringella
 import "intl-list-format";
 import "intl-list-format/locale-data/en";
 import "intl-list-format/locale-data/de";
+import 'intl-pluralrules'
 
 import { BoundTemplate, boundTemplate, isBoundTemplate } from "./lib/BoundTemplate";
 import { LanguageKey } from "./lib/LanguageKey";
