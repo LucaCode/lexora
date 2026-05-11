@@ -13,6 +13,8 @@ import { PipelineFunction } from "./lib/PipelineFunction/PipelineFunction";
 import { StringResource, StringResourceMap, SR } from "./lib/StringResource";
 import { WatchableString } from "./lib/WatchableString";
 import { Template } from "./lib/Types";
+import { FormatAdapter } from "./lib/FormatAdapter/FormatAdapter";
+import { createIntlFormatAdapter } from "./lib/FormatAdapter/IntlFormatAdapter";
 
 export {
     LanguageKey,
@@ -28,5 +30,7 @@ export {
     isBoundTemplate,
     BoundTemplate,
     SR,
-    Template
+    Template,
+    FormatAdapter,
+    createIntlFormatAdapter
 };

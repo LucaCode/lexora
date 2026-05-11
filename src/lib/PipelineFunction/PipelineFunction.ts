@@ -1,4 +1,5 @@
 import { DynamicValue } from "../DynamicValue";
+import { FormatAdapter } from "../FormatAdapter/FormatAdapter";
 import { LanguageKey } from "../LanguageKey";
 import { TranslateCallContext } from "../LexoraContext";
 import { StringResource } from "../StringResource";
@@ -25,6 +26,7 @@ export interface PipelineProcessContext {
      * functions during the processing of a single translation call.
      */
     executionContext: Record<string, any>;
+    formatAdapter: FormatAdapter;   
 }
 
 export type PipelineProcessFunction =

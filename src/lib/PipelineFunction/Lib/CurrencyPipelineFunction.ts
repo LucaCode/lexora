@@ -5,7 +5,7 @@ export const CurrencyPipelineFunction: PipelineFunction = {
     type: "value",
     phase: "format",
     process: (context) => {
-        const { value, parameters, language } = context;
+        const { value, parameters, language, formatAdapter } = context;
 
         if (value == null) return value;
 
@@ -21,8 +21,7 @@ export const CurrencyPipelineFunction: PipelineFunction = {
         const maximumFractionDigits =
             parameters?.[2] != null ? Number(parameters[2]) : undefined;
 
-        return new Intl.NumberFormat(language, {
-            style: "currency",
+        return formatAdapter.formatCurrency(language, value, {
             currency,
             ...(minimumFractionDigits !== undefined && {
                 minimumFractionDigits,
@@ -30,6 +29,6 @@ export const CurrencyPipelineFunction: PipelineFunction = {
             ...(maximumFractionDigits !== undefined && {
                 maximumFractionDigits,
             }),
-        }).format(value);
+        });
     },
 };

@@ -1,3 +1,4 @@
+import { ListFormatStyle, ListFormatType } from "../../FormatAdapter/FormatAdapter";
 import { SR } from "../../StringResource";
 import { PipelineFunction } from "../PipelineFunction";
 
@@ -5,11 +6,11 @@ export const ListPipelineFunction: PipelineFunction = {
     name: "list",
     type: "array",
     process: (context) => {
-        const { value, language, parameters } = context;
+        const { value, language, parameters, formatAdapter } = context;
         if (value == null || SR.isStringResource(value) || !Array.isArray(value)) return value;
 
-        let type: Intl.ListFormatType = "conjunction";
-        let style: Intl.ListFormatStyle = "long";
+        let type: ListFormatType = "conjunction";
+        let style: ListFormatStyle = "long";
 
         if (parameters?.length) {
             const [typeParam, styleParam] = parameters;
@@ -21,14 +22,14 @@ export const ListPipelineFunction: PipelineFunction = {
             }
             if (styleParam) {
                 if (["long", "short", "narrow"].includes(styleParam)) {
-                    style = styleParam as Intl.ListFormatStyle;
+                    style = styleParam as ListFormatStyle;
                 }
             }
         }
 
-        return new Intl.ListFormat(language, {
+        return formatAdapter.formatList(language, value.map(v => String(v)), {
             type,
             style,
-        }).format(value.map(v => String(v)));
+        });
     },
 };

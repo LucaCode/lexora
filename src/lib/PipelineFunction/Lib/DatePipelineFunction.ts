@@ -44,7 +44,7 @@ export const DatePipelineFunction: PipelineFunction = {
   type: "value",
   phase: "format",
   process: (context) => {
-    const { value, parameters, language } = context;
+    const { value, parameters, language, formatAdapter } = context;
     const date = toDate(value);
 
     const format = parameters?.[0];
@@ -52,30 +52,30 @@ export const DatePipelineFunction: PipelineFunction = {
     switch (format) {
       case undefined:
       case "medium":
-        return new Intl.DateTimeFormat(language, {
+        return formatAdapter.formatDate(language, date, {
           dateStyle: "medium",
-        }).format(date);
+        });
 
       case "short":
-        return new Intl.DateTimeFormat(language, {
+        return formatAdapter.formatDate(language, date, {
           dateStyle: "short",
-        }).format(date);
+        });
 
       case "long":
-        return new Intl.DateTimeFormat(language, {
+        return formatAdapter.formatDate(language, date, {
           dateStyle: "long",
-        }).format(date);
+        });
 
       case "time":
-        return new Intl.DateTimeFormat(language, {
+        return formatAdapter.formatDate(language, date, {
           timeStyle: "short",
-        }).format(date);
+        });
 
       case "datetime":
-        return new Intl.DateTimeFormat(language, {
+        return formatAdapter.formatDate(language, date, {
           dateStyle: "medium",
           timeStyle: "short",
-        }).format(date);
+        });
 
       case "iso":
         return date.toISOString();

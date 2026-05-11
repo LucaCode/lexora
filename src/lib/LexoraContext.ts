@@ -12,11 +12,14 @@ import { DynamicValue, FormattableResource } from "./DynamicValue";
 import { formatFormattableResourceDefault, resolveStringResourceMaps } from "./DefaultFormatter";
 import { BoundTemplate, isBoundTemplate } from "./BoundTemplate";
 import { SingleOrArray, Template } from "./Types";
+import { FormatAdapter } from "./FormatAdapter/FormatAdapter";
+import { createIntlFormatAdapter } from "./FormatAdapter/IntlFormatAdapter";
 
 export type TranslateCallContext = Record<string, DynamicValue | undefined>;
 type WatchableStringRef = WeakRef<WatchableString<LexoraContext>>;
 
 interface LexoraContextOptions {
+    formatAdapter?: FormatAdapter;
     ignoreMissingKeys?: boolean;
     defaultValueForMissingKeys?: string;
     skipFailedPipelineFunctions?: boolean;
@@ -32,6 +35,7 @@ export class LexoraContext extends EventEmitter.Protected<{
         ignoreMissingPipelineFunctions: false,
         defaultValueForMissingKeys: "?",
     };
+    private _formatAdapter: FormatAdapter;
 
     private _defaultPipelineFunctions: PipelineFunction[] = [];
 
@@ -53,6 +57,7 @@ export class LexoraContext extends EventEmitter.Protected<{
     constructor(options?: LexoraContextOptions) {
         super();
         if (options) this._options = { ...this._options, ...options };
+        this._formatAdapter = this._options.formatAdapter ?? createIntlFormatAdapter();
 
         this.on("update", () => {
             for (const ref of this._watchableStrings) {
@@ -242,7 +247,7 @@ export class LexoraContext extends EventEmitter.Protected<{
                 const values = value.map(v => this._processValue(key, v, callContext, valuePipelineFunctionCalls, callPath));
                 if (pipelines.length === 0) return values.join(" ");
                 else return processPipeline(values, undefined, this._currentLanguage, 
-                    arrayPipelineFunctionCalls, callContext, {}, this._options);
+                    arrayPipelineFunctionCalls, callContext, {}, this._formatAdapter, this._options);
             }
             else return this._processValue(key, value, callContext, valuePipelineFunctionCalls, callPath);
         });
@@ -260,20 +265,20 @@ export class LexoraContext extends EventEmitter.Protected<{
             if (SR.hasForms(value)) {
                 const selectPipelines = pipelines.filter(call => call.pipeline.phase === "select");
                 if (selectPipelines.length > 0) value = processPipeline(value, value,
-                     this._currentLanguage, selectPipelines, callContext, executionContext, this._options);
+                     this._currentLanguage, selectPipelines, callContext, executionContext, this._formatAdapter, this._options);
                 else value = SR.getDefaultValue(value);
             }
         }
         if (transformPipelines.length > 0) value = processPipeline(value, originalStringResource, 
-            this._currentLanguage, transformPipelines, callContext, executionContext, this._options);
+            this._currentLanguage, transformPipelines, callContext, executionContext, this._formatAdapter, this._options);
 
         if(SR.isStringResource(value))
             value = this._processStringResource(value, callContext, [...callPath, key]);
 
         if (formatPipelines.length > 0) value = processPipeline(value, originalStringResource, 
-            this._currentLanguage, formatPipelines, callContext, executionContext, this._options);
+            this._currentLanguage, formatPipelines, callContext, executionContext, this._formatAdapter, this._options);
 
-        return typeof value === "string" ? value : formatFormattableResourceDefault(value, this._currentLanguage);
+        return typeof value === "string" ? value : formatFormattableResourceDefault(value, this._currentLanguage, this._formatAdapter);
     }
 
     private _resolveKeyFromCallContext(key: string, context: TranslateCallContext): SingleOrArray<StringResource | FormattableResource> | undefined {

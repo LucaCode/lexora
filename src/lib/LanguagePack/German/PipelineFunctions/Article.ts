@@ -1,4 +1,5 @@
 import { SR, StringResource } from "../../../..";
+import { PluralRule } from "../../../FormatAdapter/FormatAdapter";
 import { PipelineFunction } from "../../../PipelineFunction/PipelineFunction";
 import { Features } from "../Features";
 
@@ -78,7 +79,7 @@ export const ArticlePipelineFunction: PipelineFunction = {
         if(!stringResource) throw new Error(`article: can not determine gender without stringResource`);
         const metadata = SR.getMetadata(stringResource as StringResource);
 
-        const form = context.executionContext.form as Intl.LDMLPluralRule | "_" | undefined;
+        const form = context.executionContext.form as PluralRule | "_" | undefined;
         const isPluralForm =
             form !== undefined &&
             form !== "_" &&

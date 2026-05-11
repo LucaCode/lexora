@@ -4,10 +4,11 @@ GitHub: LucaCode
 Copyright(c) Ing. Luca Gian Scaringella
  */
 
+import { PluralRule } from "./FormatAdapter/FormatAdapter";
 import { LanguageKey } from "./LanguageKey";
 
 export type StringForms =
-    Partial<Record<Intl.LDMLPluralRule, string>> & {
+    Partial<Record<PluralRule, string>> & {
         _: string;
     };
 

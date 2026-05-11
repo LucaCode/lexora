@@ -5,7 +5,7 @@ export const NumberPipelineFunction: PipelineFunction = {
     type: "value",
     phase: "format",
     process: (context) => {
-        const { value, parameters, language } = context;
+        const { value, parameters, language, formatAdapter } = context;
 
         if (typeof value !== "number" && typeof value !== "bigint") {
             throw new Error("number: value must be number or bigint");
@@ -14,11 +14,11 @@ export const NumberPipelineFunction: PipelineFunction = {
         const fractionDigits =
             parameters?.[0] != null ? Number(parameters[0]) : undefined;
 
-        return new Intl.NumberFormat(language, {
+        return formatAdapter.formatNumber(language, value, {
             ...(fractionDigits !== undefined && {
                 minimumFractionDigits: fractionDigits,
                 maximumFractionDigits: fractionDigits,
             }),
-        }).format(value);
+        });
     },
 }

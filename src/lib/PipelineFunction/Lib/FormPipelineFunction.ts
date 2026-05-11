@@ -1,5 +1,6 @@
 import { PipelineFunction } from "../PipelineFunction";
 import { SR } from "../../StringResource";
+import { PluralRule } from "../../FormatAdapter/FormatAdapter";
 
 export const FormPipelineFunction: PipelineFunction = {
     name: "form",
@@ -17,7 +18,7 @@ export const FormPipelineFunction: PipelineFunction = {
         if (parameter.startsWith(":")) {
             const formName = parameter.slice(1);
             context.executionContext.form = formName;
-            return forms[formName as Intl.LDMLPluralRule] ?? forms._ ?? "";
+            return forms[formName as PluralRule] ?? forms._ ?? "";
         }
 
         const numberValue = Number(context.callContext[parameter]);
@@ -25,8 +26,8 @@ export const FormPipelineFunction: PipelineFunction = {
             throw new Error(`form: invalid count "${numberValue}" (expected number or explicit form like ":other")`);
         }
 
-        const rule = new Intl.PluralRules(context.language).select(numberValue);
+        const rule = context.formatAdapter.selectPluralRule(context.language, numberValue);
         context.executionContext.form = rule;
-        return forms[rule as Intl.LDMLPluralRule] ?? forms._ ?? "";
+        return forms[rule as PluralRule] ?? forms._ ?? "";
     },
 };

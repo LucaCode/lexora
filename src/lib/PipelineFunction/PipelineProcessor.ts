@@ -2,7 +2,7 @@ import { StringResource } from "../StringResource";
 import { DynamicValue } from "../DynamicValue";
 import { PipelineFunction, PipelineFunctionsMap } from "./PipelineFunction";
 import { LanguageKey } from "../LanguageKey";
-import { TranslateCallContext } from "../..";
+import { FormatAdapter, TranslateCallContext } from "../..";
 import { ensureString } from "../DefaultFormatter";
 
 export type DeclaredPipelineFunctionCall = { name: string; params: string[] };
@@ -38,9 +38,10 @@ export function processPipeline(
     pipelineFunctionCalls: PipelineFunctionCall[] = [],
     callContext: Readonly<TranslateCallContext>,
     executionContext: Record<string, any>,
+    formatAdapter: FormatAdapter,
     options: PipelineProcessOptions): string
 {
-    if (pipelineFunctionCalls.length === 0) return ensureString(value, language);
+    if (pipelineFunctionCalls.length === 0) return ensureString(value, language, formatAdapter);
 
     let currentValue = value;
     for (const pipelineFunctionCall of pipelineFunctionCalls) {
@@ -53,6 +54,7 @@ export function processPipeline(
                 stringResource: originalStringResource,
                 callContext,
                 executionContext,
+                formatAdapter,
             });
         }
         catch (err) {
@@ -60,5 +62,5 @@ export function processPipeline(
             else throw err;
         }
     }
-    return ensureString(currentValue, language);
+    return ensureString(currentValue, language, formatAdapter);
 }

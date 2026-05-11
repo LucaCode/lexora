@@ -1,18 +1,20 @@
 import { DynamicValue, FormattableResource } from "./DynamicValue";
+import { FormatAdapter } from "./FormatAdapter/FormatAdapter";
 import { LanguageKey } from "./LanguageKey";
 import { SR, StringResource, StringResourceMap } from "./StringResource";
 
 export function formatFormattableResourceDefault(
   value: FormattableResource,
-  language: LanguageKey
+  language: LanguageKey,
+  formatAdapter: FormatAdapter
 ): string {
   if (value instanceof Date) {
-    return new Intl.DateTimeFormat(language, {
+    return formatAdapter.formatDate(language, value, {
       dateStyle: "medium",
-    }).format(value);
+    });
   }
   if (typeof value === "number" || typeof value === "bigint")
-    return new Intl.NumberFormat(language).format(value);
+    return formatAdapter.formatNumber(language, value);
   return String(value);
 }
 
@@ -22,10 +24,10 @@ export function resolveStringResourceMaps(value: (StringResource | StringResourc
   else return value;
 }
 
-export function ensureString(value: DynamicValue, language: LanguageKey): string {
+export function ensureString(value: DynamicValue, language: LanguageKey, formatAdapter: FormatAdapter): string {
   if (typeof value === "string") return value;
   if (SR.isStringResource(value)) return SR.getDefaultValue(value);
-  if (Array.isArray(value)) return value.map(v => ensureString(v, language)).join("");
-  if(typeof value === "object" && !(value instanceof Date)) return ensureString((value as StringResourceMap)[language], language);
-  return formatFormattableResourceDefault(value, language);
+  if (Array.isArray(value)) return value.map(v => ensureString(v, language, formatAdapter)).join("");
+  if (typeof value === "object" && !(value instanceof Date)) return ensureString((value as StringResourceMap)[language], language, formatAdapter);
+  return formatFormattableResourceDefault(value, language, formatAdapter);
 }

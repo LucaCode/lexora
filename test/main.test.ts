@@ -5,7 +5,7 @@ Copyright(c) Ing. Luca Gian Scaringella
 */
 
 const assert = require("chai").assert;
-import { LexoraContext, StringResourceMap, LanguagePacks, SR, StringResource } from "../src";
+import { LexoraContext, StringResourceMap, LanguagePacks, SR, StringResource, createIntlFormatAdapter } from "../src";
 import { formatFormattableResourceDefault } from "../src/lib/DefaultFormatter";
 import "mocha";
 
@@ -971,7 +971,7 @@ describe("Template translation and pipeline processing", () => {
                 );
             });
 
-            it("should select singular form for count 1 using Intl.PluralRules", () => {
+            it("should select singular form for count 1 using PluralRules", () => {
                 const ctx = makeStrictCtx();
                 ctx.language = "de";
 
@@ -983,7 +983,7 @@ describe("Template translation and pipeline processing", () => {
                 );
             });
 
-            it("should select plural form for count greater than 1 using Intl.PluralRules", () => {
+            it("should select plural form for count greater than 1 using PluralRules", () => {
                 const ctx = makeStrictCtx();
                 ctx.language = "de";
 
@@ -1309,13 +1309,13 @@ describe("Template translation and pipeline processing", () => {
             const sampleDate = new Date(2025, 3, 12);
 
             it("should format Date using medium preset (de)", () => {
-                const result = formatFormattableResourceDefault(sampleDate, "de");
+                const result = formatFormattableResourceDefault(sampleDate, "de", createIntlFormatAdapter());
                 assert.include(result, "12");
                 assert.include(result, "2025");
             });
 
             it("should format Date using medium preset (en)", () => {
-                const result = formatFormattableResourceDefault(sampleDate, "en");
+                const result = formatFormattableResourceDefault(sampleDate, "en", createIntlFormatAdapter());
 
                 assert.include(result, "2025");
             });
@@ -1324,13 +1324,13 @@ describe("Template translation and pipeline processing", () => {
         describe("number", () => {
 
             it("should format number in German locale", () => {
-                const result = formatFormattableResourceDefault(1234.56, "de");
+                const result = formatFormattableResourceDefault(1234.56, "de", createIntlFormatAdapter());
 
                 assert.equal(result, "1.234,56");
             });
 
             it("should format number in English locale", () => {
-                const result = formatFormattableResourceDefault(1234.56, "en");
+                const result = formatFormattableResourceDefault(1234.56, "en", createIntlFormatAdapter());
 
                 assert.equal(result, "1,234.56");
             });
@@ -1340,13 +1340,13 @@ describe("Template translation and pipeline processing", () => {
         describe("bigint", () => {
 
             it("should format bigint in English locale", () => {
-                const result = formatFormattableResourceDefault(1234567890123456789n, "en");
+                const result = formatFormattableResourceDefault(1234567890123456789n, "en", createIntlFormatAdapter());
 
                 assert.equal(result, "1,234,567,890,123,456,789");
             });
 
             it("should format bigint in German locale", () => {
-                const result = formatFormattableResourceDefault(1234567890123456789n, "de");
+                const result = formatFormattableResourceDefault(1234567890123456789n, "de", createIntlFormatAdapter());
 
                 assert.equal(result, "1.234.567.890.123.456.789");
             });
@@ -1356,13 +1356,13 @@ describe("Template translation and pipeline processing", () => {
         describe("boolean fallback", () => {
 
             it("should fallback to string for boolean true", () => {
-                const result = formatFormattableResourceDefault(true, "en");
+                const result = formatFormattableResourceDefault(true, "en", createIntlFormatAdapter());
 
                 assert.equal(result, "true");
             });
 
             it("should fallback to string for boolean false", () => {
-                const result = formatFormattableResourceDefault(false, "de");
+                const result = formatFormattableResourceDefault(false, "de", createIntlFormatAdapter());
 
                 assert.equal(result, "false");
             });

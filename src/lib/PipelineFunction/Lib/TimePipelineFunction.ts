@@ -37,7 +37,7 @@ export const TimePipelineFunction: PipelineFunction = {
   type: "value",
   phase: "format",
   process: (context) => {
-    const { value, parameters, language } = context;
+    const { value, parameters, language, formatAdapter } = context;
     const date = toDate(value);
 
     const format = parameters?.[0];
@@ -45,19 +45,19 @@ export const TimePipelineFunction: PipelineFunction = {
     switch (format) {
       case undefined:
       case "short":
-        return new Intl.DateTimeFormat(language, {
+        return formatAdapter.formatDate(language, date, {
           timeStyle: "short",
-        }).format(date);
+        });
 
       case "medium":
-        return new Intl.DateTimeFormat(language, {
+        return formatAdapter.formatDate(language, date, {
           timeStyle: "medium",
-        }).format(date);
+        });
 
       case "long":
-        return new Intl.DateTimeFormat(language, {
+        return formatAdapter.formatDate(language, date, {
           timeStyle: "long",
-        }).format(date);
+        });
     }
 
     return formatCustomTime(date, format);
