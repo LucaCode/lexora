@@ -1,16 +1,17 @@
+import { PluralRule } from "../../../FormatAdapter/FormatAdapter";
 import { PipelineFunction } from "../../../PipelineFunction/PipelineFunction";
 
 export const ArticlePipelineFunction: PipelineFunction = {
     name: "article",
     type: "value",
-    phase: "transform",
+    phase: "format",
     process: (context) => {
         const type = context.parameters?.[0]; // "definite" | "indefinite"
 
         const noun = String(context.value).trim();
         if (!noun) throw new Error("article: empty noun");
         
-        const form = context.executionContext.form as Intl.LDMLPluralRule | "_" | undefined;
+        const form = context.executionContext.form as PluralRule | "_" | undefined;
         const isPluralForm =
             form !== undefined &&
             form !== "_" &&
