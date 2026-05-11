@@ -153,8 +153,6 @@ Output:
 ```ts
 5 points
 ```
-Internally, Lexora uses Intl.PluralRules.
-
 You can also select a form explicitly:
 ```ts
 ctx.translate("{{point->form(:other)}}");
