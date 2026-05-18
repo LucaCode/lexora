@@ -74,11 +74,9 @@ export namespace SR {
     export function getValue(
         sr: StringResource
     ): StringResourceValue;
-
     export function getValue(
         sr: null | undefined | StringResource
     ): undefined | StringResourceValue;
-
     export function getValue(
         sr: StringResource | null | undefined
     ): StringResourceValue | undefined {
@@ -166,7 +164,14 @@ export namespace SR {
         return create(value, metadata);
     }
 
-    export function getDefaultValue(sr: StringResource): string {
+    export function getDefaultValue(
+        sr: StringResource
+    ): string;
+    export function getDefaultValue(
+        sr: null | undefined | StringResource
+    ): undefined | string;
+    export function getDefaultValue(sr: StringResource | null | undefined): string | undefined {
+        if(sr == null) return undefined;
         const value = getValue(sr);
         if (typeof value === "string") return value;
         if (SR.isForms(value)) return value._;
