@@ -27,7 +27,8 @@ interface LexoraContextOptions {
 }
 
 export class LexoraContext extends EventEmitter.Protected<{
-    update: []
+    update: [],
+    languageChange: [newLanguage: LanguageKey, oldLanguage: LanguageKey],
 }> {
     private _options: LexoraContextOptions = {
         skipFailedPipelineFunctions: false,
@@ -200,6 +201,7 @@ export class LexoraContext extends EventEmitter.Protected<{
         if (oldLanguage !== language) {
             this._updateCurrentLanguagePipelineFunctions();
             this.emit("update");
+            this.emit("languageChange", language, oldLanguage);
         }
     }
 
