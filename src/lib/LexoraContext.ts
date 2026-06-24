@@ -205,6 +205,10 @@ export class LexoraContext extends EventEmitter.Protected<{
         }
     }
 
+    get language(): LanguageKey {
+        return this._currentLanguage;
+    }
+
     private _updateCurrentLanguagePipelineFunctions() {
         const currentPipelineFunctionsMap: PipelineFunctionsMap = {};
 
